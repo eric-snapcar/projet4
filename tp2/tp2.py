@@ -32,16 +32,15 @@ plt.show()
 
 knn = neighbors.KNeighborsClassifier(7)
 knn.fit(xtrain, ytrain)
-predicted = knn.predict(xtest)
+ypredicted = knn.predict(xtest)
 print xtest.shape
-images = xtest.reshape((-1, 28, 28))
-print images.shape
-"""
-select = np.random.randint(images.shape[0], size=12)
-for index, value in enumerate(select):
+xtest_image = xtest.reshape((-1, 28, 28))
+print xtest_image.shape
+
+rand_image_index = np.random.randint(xtest_image.shape[0], size=12)
+for index, value in enumerate(rand_image_index):
     plt.subplot(3,4,index+1)
     plt.axis('off')
-    plt.imshow(images[value],cmap=plt.cm.gray_r,interpolation="nearest")
-    plt.title('Predicted: %i' % predicted[value])
+    plt.imshow(xtest_image[value],cmap=plt.cm.gray_r,interpolation="nearest")
+    plt.title('Predicted: %i' % ypredicted[value])
 plt.show()
-"""
