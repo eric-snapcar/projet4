@@ -36,7 +36,7 @@ ypredicted = knn.predict(xtest)
 print xtest.shape
 xtest_image = xtest.reshape((-1, 28, 28))
 print xtest_image.shape
-
+"""
 rand_image_index = np.random.randint(xtest_image.shape[0], size=12)
 for index, value in enumerate(rand_image_index):
     plt.subplot(3,4,index+1)
@@ -44,3 +44,4 @@ for index, value in enumerate(rand_image_index):
     plt.imshow(xtest_image[value],cmap=plt.cm.gray_r,interpolation="nearest")
     plt.title('Predicted: %i' % ypredicted[value])
 plt.show()
+"""
