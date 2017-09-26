@@ -8,3 +8,5 @@ data = mnist.data[sample]
 target = mnist.target[sample]
 print data.shape
 print target.shape
+
+xtrain, xtest, ytrain, ytest = train_test_split(data, target, train_size=0.8)
