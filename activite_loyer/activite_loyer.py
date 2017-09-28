@@ -20,34 +20,37 @@ def clean( house_data ):
 def linearRegression_1( house_data_raw ):
     # Linear Regresssion No Arrondissement
     # Cleaning
-    house_data_raw_clean = clean(house_data_raw)
+    house_data = clean(house_data_raw)
     # Column Selection
-    house_data_1 = house_data_raw_clean[['price','surface']]
+    house_data = house_data[['price','surface']]
     # Train Test
-    house_data_1_train, house_data_1_test = train_test_split(house_data_1, train_size=0.8)
+    house_data_train, house_data_test = train_test_split(house_data, train_size=0.8)
     # Train Test Surface Price
-    house_data_1_train_surface = house_data_1_train.surface.values.reshape(-1,1)
-    house_data_1_train_price = house_data_1_train.price.values.reshape(-1,1)
-    house_data_1_test_surface = house_data_1_test.surface.values.reshape(-1,1)
-    house_data_1_test_price = house_data_1_test.price.values.reshape(-1,1)
+    house_data_train_surface = house_data_train.surface.values.reshape(-1,1)
+    house_data_train_price = house_data_train.price.values.reshape(-1,1)
+    house_data_test_surface = house_data_test.surface.values.reshape(-1,1)
+    house_data_test_price = house_data_test.price.values.reshape(-1,1)
     rl = linear_model.LinearRegression()
-    rl.fit(house_data_1_train_surface, house_data_1_train_price)
-    house_data_1_predicted_price = rl.predict(house_data_1_test_surface)
+    rl.fit(house_data_train_surface, house_data_train_price)
+    house_data_predicted_price = rl.predict(house_data_test_surface)
     # Prediciton Error
-    mean_squared_error_ = mean_squared_error(house_data_1_test_price, house_data_1_predicted_price)
-    variance_score = r2_score(house_data_1_test_price, house_data_1_predicted_price)
+    mean_squared_error_ = mean_squared_error(house_data_test_price, house_data_predicted_price)
+    variance_score = r2_score(house_data_test_price, house_data_predicted_price)
     coefficient = rl.coef_
     print("Mean squared error: %.2f"  % mean_squared_error_)
     print('Variance score: %.2f' % variance_score)
     print('Coefficients: %.2f', coefficient)
     # Plot
-    plt.plot( house_data_1_train_surface, house_data_1_train_price,'ro', markersize=4)
+    plt.plot( house_data_train_surface, house_data_train_price,'ro', markersize=4)
     plt.plot( house_data_1_test_surface, house_data_1_predicted_price,'b', markersize=4)
     plt.show()
     return ;
 house_data_raw = pd.read_csv('house_data.csv')
 linearRegression_1(house_data_raw)
 
+
+#house_data_raw_arrondissment = house_data_raw.arrondissement.unique()
+#print(house_data_raw_arrondissment)
 
 
 
