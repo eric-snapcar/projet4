@@ -22,6 +22,8 @@ print(house_data_raw.shape)
 print(house_data_raw_cleant.shape)
 print(house_data_raw_cleant_.shape)
 
+house_data_1 = house_data_raw[['price','surface']]
+print(house_data_1)
 """
 plt.plot(house_data_raw['price'], house_data_raw['surface'], 'ro', markersize=4)
 plt.show()
