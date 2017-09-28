@@ -2,8 +2,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def isNaN(num):
-    return num != num
 def plot( house_data):
     plt.plot(house_data['price'], house_data['surface'], 'ro', markersize=4)
     plt.show()
