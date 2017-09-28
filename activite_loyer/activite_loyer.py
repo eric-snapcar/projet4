@@ -26,13 +26,13 @@ print(house_data_1_test)
 
 
 from sklearn import linear_model
-regr = linear_model.LinearRegression()
+rl = linear_model.LinearRegression()
 
-house_data_1_train_surface = house_data_1_train.surface.values.reshape(1,-1)
-house_data_1_train_price = house_data_1_train.price.values.reshape(1,-1)
+house_data_1_train_surface = house_data_1_train.surface.values.reshape(-1,1)
+house_data_1_train_price = house_data_1_train.price.values.reshape(-1,1)
 
-house_data_1_test_surface = house_data_1_test.surface.values.reshape(1,-1)
-house_data_1_test_price = house_data_1_test.price.values.reshape(1,-1)
+house_data_1_test_surface = house_data_1_test.surface.values.reshape(-1,1)
+house_data_1_test_price = house_data_1_test.price.values.reshape(-1,1)
 
 
 
@@ -42,8 +42,8 @@ print(house_data_1_train_surface.shape)
 print(house_data_1_test_surface.shape)
 print(house_data_1_test_price.shape)
 
-regr.fit(house_data_1_train_surface, house_data_1_train_price)
-#regr.predict(house_data_1_test_surface)
+rl.fit(house_data_1_train_surface, house_data_1_train_price)
+print(rl.predict(house_data_1_test_surface))
 
 """
 plt.plot(house_data_raw['price'], house_data_raw['surface'], 'ro', markersize=4)
