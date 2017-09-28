@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn import linear_model
-
+from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 
 def plot( house_data):
@@ -33,6 +33,11 @@ def linearRegression_1( house_data_raw ):
     rl = linear_model.LinearRegression()
     rl.fit(house_data_1_train_surface, house_data_1_train_price)
     house_data_1_predicted_price = rl.predict(house_data_1_test_surface)
+    # Prediciton Error
+    mean_squared_error_ = mean_squared_error(house_data_1_test_price, house_data_1_predicted_price)
+    variance_score = r2_score(house_data_1_test_price, house_data_1_predicted_price)
+    print("Mean squared error: %.2f"  % mean_squared_error_)
+    print('Variance score: %.2f' % variance_score)
     # Plot
     plt.plot(house_data_1_train_price, house_data_1_train_surface, 'ro', markersize=4)
     plt.plot(house_data_1_predicted_price, house_data_1_test_surface, 'b', markersize=4)
