@@ -2,10 +2,20 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 # On charge le dataset
+
+def plot( house_data_raw ):
+    plt.plot(house_data_raw['price'], house_data_raw['surface'], 'ro', markersize=4)
+    plt.show()
+    return;
+
+
 house_data_raw = pd.read_csv('house_data.csv')
-print (house_data_raw)
+plot (house_data_raw)
+
+"""
 plt.plot(house_data_raw['price'], house_data_raw['surface'], 'ro', markersize=4)
 plt.show()
+"""
 """
 price = house_data_raw['price']
 surface = house_data_raw['surface']
