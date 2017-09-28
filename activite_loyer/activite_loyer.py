@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn import linear_model
+
 from sklearn.model_selection import train_test_split
 
 def plot( house_data):
@@ -17,33 +19,28 @@ def clean( house_data ):
     return house_data.dropna();
 
 house_data_raw = pd.read_csv('house_data.csv')
+
+# Linear Regresssion No Arrondissement
+# Cleaning
 house_data_raw_clean = clean(house_data_raw)
+# Column Selection
 house_data_1 = house_data_raw_clean[['price','surface']]
+# Train Test
 house_data_1_train, house_data_1_test = train_test_split(house_data_1, train_size=0.8)
-
-print(house_data_1_train)
-print(house_data_1_test)
-
-
-from sklearn import linear_model
-rl = linear_model.LinearRegression()
-
+# Train Test Surface Price
 house_data_1_train_surface = house_data_1_train.surface.values.reshape(-1,1)
 house_data_1_train_price = house_data_1_train.price.values.reshape(-1,1)
-
 house_data_1_test_surface = house_data_1_test.surface.values.reshape(-1,1)
 house_data_1_test_price = house_data_1_test.price.values.reshape(-1,1)
-
-
-
-print(house_data_1_train_price.shape)
-print(house_data_1_train_surface.shape)
-
-print(house_data_1_test_surface.shape)
-print(house_data_1_test_price.shape)
-
+rl = linear_model.LinearRegression()
 rl.fit(house_data_1_train_surface, house_data_1_train_price)
-print(rl.predict(house_data_1_test_surface))
+house_data_1_predicted_price = rl.predict(house_data_1_test_surface)
+# Plot
+plt.plot(house_data_1_train_price, house_data_1_train_surface, 'ro', markersize=4)
+plt.plot(house_data_1_predicted_price, house_data_1_test_surface, 'b', markersize=4)
+plt.show()
+
+
 
 """
 plt.plot(house_data_raw['price'], house_data_raw['surface'], 'ro', markersize=4)
