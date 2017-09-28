@@ -36,8 +36,10 @@ def linearRegression_1( house_data_raw ):
     # Prediciton Error
     mean_squared_error_ = mean_squared_error(house_data_1_test_price, house_data_1_predicted_price)
     variance_score = r2_score(house_data_1_test_price, house_data_1_predicted_price)
+    coefficient = rl.coef_
     print("Mean squared error: %.2f"  % mean_squared_error_)
     print('Variance score: %.2f' % variance_score)
+    print('Coefficients: %.2f', coefficient)
     # Plot
     plt.plot( house_data_1_train_surface, house_data_1_train_price,'ro', markersize=4)
     plt.plot( house_data_1_test_surface, house_data_1_predicted_price,'b', markersize=4)
