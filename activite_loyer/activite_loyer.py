@@ -39,8 +39,8 @@ def linearRegression_1( house_data_raw ):
     print("Mean squared error: %.2f"  % mean_squared_error_)
     print('Variance score: %.2f' % variance_score)
     # Plot
-    plt.plot(house_data_1_train_price, house_data_1_train_surface, 'ro', markersize=4)
-    plt.plot(house_data_1_predicted_price, house_data_1_test_surface, 'b', markersize=4)
+    plt.plot( house_data_1_train_surface, house_data_1_train_price,'ro', markersize=4)
+    plt.plot( house_data_1_test_surface, house_data_1_predicted_price,'b', markersize=4)
     plt.show()
     return ;
 house_data_raw = pd.read_csv('house_data.csv')
