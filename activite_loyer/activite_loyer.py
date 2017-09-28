@@ -20,11 +20,23 @@ house_data_raw = pd.read_csv('house_data.csv')
 house_data_raw_clean = clean(house_data_raw)
 house_data_1 = house_data_raw_clean[['price','surface']]
 house_data_1_train, house_data_1_test = train_test_split(house_data_1, train_size=0.8)
+
 print(house_data_1_train)
 print(house_data_1_test)
 
 
+from sklearn import linear_model
+regr = linear_model.LinearRegression()
 
+
+
+house_data_1_train_surface = house_data_1_train.surface.values.reshape(1,-1)
+house_data_1_train_price = house_data_1_train.price.values.reshape(1,-1)
+
+print(house_data_1_train_price.shape)
+print(house_data_1_train_surface.shape)
+regr.fit(house_data_1_train_surface, house_data_1_train_price)
+regr.predict(40)
 
 """
 plt.plot(house_data_raw['price'], house_data_raw['surface'], 'ro', markersize=4)
