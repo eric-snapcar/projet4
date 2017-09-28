@@ -52,10 +52,19 @@ def linearRegression_1( house_data , plot):
         plt.show()
     return ;
 
+def linearRegression_2( house_data_clean , plot):
+    arrondissements = getArrondissement(house_data_clean)
+    for arrondissement in arrondissements:
+        print(arrondissement)
+    return;
+
+
 house_data_raw = pd.read_csv('house_data.csv')
-
-linearRegression_1(house_data_raw,False)
-
+house_data_raw = house_data_raw[house_data_raw.price<7000]
+#linearRegression_1(house_data_raw,False)
+house_data_clean = clean(house_data_raw)
+linearRegression_2(house_data_clean,False)
+"""
 house_data_raw_1 = house_data_raw[(house_data_raw.arrondissement == 1)]
 print(house_data_raw_1)
 house_data_raw_arrondissment = getArrondissement(clean(house_data_raw))
@@ -67,7 +76,7 @@ house_data_raw_arrondissment = getArrondissement(clean(house_data_raw))
 
 
 print(house_data_raw_arrondissment)
-
+"""
 
 
 """
