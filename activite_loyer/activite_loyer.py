@@ -53,11 +53,19 @@ def linearRegression_1( house_data , plot):
     return ;
 
 house_data_raw = pd.read_csv('house_data.csv')
-house_data_raw = house_data_raw[house_data_raw.price<1000]
+
 linearRegression_1(house_data_raw,False)
 
-
+house_data_raw_1 = house_data_raw[(house_data_raw.arrondissement == 1)]
+print(house_data_raw_1)
 house_data_raw_arrondissment = getArrondissement(clean(house_data_raw))
+
+
+
+
+
+
+
 print(house_data_raw_arrondissment)
 
 
