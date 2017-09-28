@@ -17,28 +17,30 @@ def clean_old( house_data ):
     return house_data[house_data.price.notnull() & house_data.surface.notnull() & house_data.arrondissement.notnull()];
 def clean( house_data ):
     return house_data.dropna();
-
+def linearRegression_1( house_data_raw ):
+    # Linear Regresssion No Arrondissement
+    # Cleaning
+    house_data_raw_clean = clean(house_data_raw)
+    # Column Selection
+    house_data_1 = house_data_raw_clean[['price','surface']]
+    # Train Test
+    house_data_1_train, house_data_1_test = train_test_split(house_data_1, train_size=0.8)
+    # Train Test Surface Price
+    house_data_1_train_surface = house_data_1_train.surface.values.reshape(-1,1)
+    house_data_1_train_price = house_data_1_train.price.values.reshape(-1,1)
+    house_data_1_test_surface = house_data_1_test.surface.values.reshape(-1,1)
+    house_data_1_test_price = house_data_1_test.price.values.reshape(-1,1)
+    rl = linear_model.LinearRegression()
+    rl.fit(house_data_1_train_surface, house_data_1_train_price)
+    house_data_1_predicted_price = rl.predict(house_data_1_test_surface)
+    # Plot
+    plt.plot(house_data_1_train_price, house_data_1_train_surface, 'ro', markersize=4)
+    plt.plot(house_data_1_predicted_price, house_data_1_test_surface, 'b', markersize=4)
+    plt.show()
+    return ;
 house_data_raw = pd.read_csv('house_data.csv')
+linearRegression_1(house_data_raw)
 
-# Linear Regresssion No Arrondissement
-# Cleaning
-house_data_raw_clean = clean(house_data_raw)
-# Column Selection
-house_data_1 = house_data_raw_clean[['price','surface']]
-# Train Test
-house_data_1_train, house_data_1_test = train_test_split(house_data_1, train_size=0.8)
-# Train Test Surface Price
-house_data_1_train_surface = house_data_1_train.surface.values.reshape(-1,1)
-house_data_1_train_price = house_data_1_train.price.values.reshape(-1,1)
-house_data_1_test_surface = house_data_1_test.surface.values.reshape(-1,1)
-house_data_1_test_price = house_data_1_test.price.values.reshape(-1,1)
-rl = linear_model.LinearRegression()
-rl.fit(house_data_1_train_surface, house_data_1_train_price)
-house_data_1_predicted_price = rl.predict(house_data_1_test_surface)
-# Plot
-plt.plot(house_data_1_train_price, house_data_1_train_surface, 'ro', markersize=4)
-plt.plot(house_data_1_predicted_price, house_data_1_test_surface, 'b', markersize=4)
-plt.show()
 
 
 
