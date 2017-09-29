@@ -6,19 +6,18 @@ import math
 def clean( products ):
     thresh = math.ceil(products.shape[0]* 0.6) # au moins 60% du nombre de lignes (arrondi)
     return products.dropna(axis=1,thresh=thresh); # au moins 60% de lignes non nulles
-def hist( products_column, range = [0, 100], bins = 50 ):
-    products_column.plot(kind='hist',bins = bins, range = range  )
-    plt.xlabel('Smarts')
-    plt.ylabel('Probability')
+def hist( products, columnName, xLabel = None, yLabel = 'count',range = [0, 100], bins = 50 ):
+    products[columnName].plot(kind='hist',bins = bins, range = range  )
+    plt.xlabel(xLabel or columnName)
+    plt.ylabel(yLabel)
     plt.show()
     return;
 # On charge le dataset
 
 products = pd.read_csv('products.csv', low_memory=False, delimiter='\t', error_bad_lines=False)
 products = clean( products )
-
-hist(products['carbohydrates_100g'], [0, 100],50)
-#products.hist(column = 'carbohydrates_100g')
+# Plot de carbohydrates_100g
+# hist(products,'carbohydrates_100g')
 
 """
 print(products.columns.values)
