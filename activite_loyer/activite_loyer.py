@@ -74,31 +74,3 @@ print('--------------')
 print('Tous les arrondissements')
 linearRegression_1(house_data_raw,True,'Tous les arrondissements')
 linearRegression_2(house_data_clean,True)
-"""
-house_data_raw_1 = house_data_raw[(house_data_raw.arrondissement == 1)]
-print(house_data_raw_1)
-house_data_raw_arrondissment = getArrondissement(clean(house_data_raw))
-
-
-
-
-
-
-
-print(house_data_raw_arrondissment)
-"""
-
-
-"""
-plt.plot(house_data_raw['price'], house_data_raw['surface'], 'ro', markersize=4)
-plt.show()
-"""
-"""
-price = house_data_raw['price']
-surface = house_data_raw['surface']
-
-from sklearn import linear_model
-regr = linear_model.LinearRegression()
-regr.fit(surface, price)
-# regr.predict(donnee_test)
-"""
