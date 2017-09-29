@@ -20,7 +20,7 @@ def clean( house_data ):
     return house_data.dropna();
 def getArrondissement( house_data_raw ):
     return house_data_raw.arrondissement.unique();
-def linearRegression_1( house_data , plot):
+def linearRegression_1( house_data , plot,graphTitle):
     # Linear Regresssion No Arrondissement
     # Cleaning
     house_data = clean(house_data)
@@ -41,12 +41,13 @@ def linearRegression_1( house_data , plot):
     variance_score = r2_score(house_data_test_price, house_data_predicted_price)
     coefficient = rl.coef_
     theta0 = rl.predict([[0]])[0,0]
-    print("Mean squared error: %.2f"  % mean_squared_error_)
-    print('Variance score: %.2f' % variance_score)
-    print('Coefficients: %.2f' % coefficient)
+    print("Erreur: %.2f"  % mean_squared_error_)
+    print('Variance: %.2f' % variance_score)
     print('Theta_0: %.2f' % theta0)
+    print('Theta_1: %.2f' % coefficient)
     # Plot
     if plot:
+        plt.title(graphTitle)
         plt.plot( house_data_train_surface, house_data_train_price,'ro', markersize=4)
         plt.plot( house_data_test_surface, house_data_predicted_price,'b', markersize=4)
         plt.show()
@@ -55,15 +56,24 @@ def linearRegression_1( house_data , plot):
 def linearRegression_2( house_data_clean , plot):
     arrondissements = getArrondissement(house_data_clean)
     for arrondissement in arrondissements:
-        print(arrondissement)
+        house_data_raw_arrondissment = house_data_clean[(house_data_clean.arrondissement == arrondissement)]
+        linearRegression_2_arrondissement(arrondissement,house_data_raw_arrondissment,plot)
     return;
 
+def linearRegression_2_arrondissement( arrondissement, house_data, plot):
+    print('--------------')
+    print('Arrondissement: %s' % arrondissement)
+    #print(house_data)
+    linearRegression_1(house_data,plot,'Arrondissement: %s' % arrondissement)
+    return;
 
 house_data_raw = pd.read_csv('house_data.csv')
 house_data_raw = house_data_raw[house_data_raw.price<7000]
-#linearRegression_1(house_data_raw,False)
 house_data_clean = clean(house_data_raw)
-linearRegression_2(house_data_clean,False)
+print('--------------')
+print('Tous les arrondissements')
+linearRegression_1(house_data_raw,True,'Tous les arrondissements')
+linearRegression_2(house_data_clean,True)
 """
 house_data_raw_1 = house_data_raw[(house_data_raw.arrondissement == 1)]
 print(house_data_raw_1)
