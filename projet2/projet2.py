@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import math
+from scipy import stats
+
 def clean( products ):
     thresh = math.ceil(products.shape[0]* 0.6) # au moins 60% du nombre de lignes (arrondi)
     return products.dropna(axis=1,thresh=thresh); # au moins 60% de lignes non nulles
@@ -12,13 +14,36 @@ def hist( products, columnName, xLabel = None, yLabel = 'count',range = [0, 100]
     plt.ylabel(yLabel)
     plt.show()
     return;
+def density( products, columnName, xLabel = None, yLabel = 'density'):
+    density = stats.kde.gaussian_kde(np.array(products[columnName].dropna()))
+    x = np.arange(0., 8, .1)
+    plt.plot(x, density(x))
+    plt.xlabel(xLabel or columnName)
+    plt.ylabel(yLabel)
+    plt.show()
+    return;
 # On charge le dataset
 
 products = pd.read_csv('products.csv', low_memory=False, delimiter='\t', error_bad_lines=False)
 products = clean( products )
 # Plot de carbohydrates_100g
-hist(products,'carbohydrates_100g')
+# hist(products,'nutrition-score-uk_100g')
 
+
+density(products,'nutrition-score-uk_100g')
+
+"""
+density = stats.kde.gaussian_kde(np.array(products['nutrition-score-uk_100g'].dropna()))
+x = np.arange(0., 8, .1)
+plt.plot(x, density(x))
+plt.show()
+"""
+"""
+import seaborn as sns
+
+sns.set_style('whitegrid')
+sns.kdeplot(np.array(products['nutrition-score-uk_100g']), bw=0.5)
+"""
 """
 print(products.columns.values)
 ['code' 'url' 'creator' 'created_t' 'created_datetime' 'last_modified_t'
