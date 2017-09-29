@@ -7,7 +7,7 @@ def clean( products ):
     thresh = math.ceil(products.shape[0]* 0.6) # au moins 60% du nombre de lignes (arrondi)
     return products.dropna(axis=1,thresh=thresh); # au moins 60% de lignes non nulles
 def hist( products, columnName, xLabel = None, yLabel = 'count',range = [0, 100], bins = 50 ):
-    products[columnName].plot(kind='hist',bins = bins, range = range  )
+    products[columnName].plot(kind='hist',bins = bins, range = range , color = '#C65C66', edgecolor='#F59AA2', )
     plt.xlabel(xLabel or columnName)
     plt.ylabel(yLabel)
     plt.show()
@@ -17,7 +17,7 @@ def hist( products, columnName, xLabel = None, yLabel = 'count',range = [0, 100]
 products = pd.read_csv('products.csv', low_memory=False, delimiter='\t', error_bad_lines=False)
 products = clean( products )
 # Plot de carbohydrates_100g
-# hist(products,'carbohydrates_100g')
+hist(products,'carbohydrates_100g')
 
 """
 print(products.columns.values)
