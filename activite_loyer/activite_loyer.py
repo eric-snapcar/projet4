@@ -18,29 +18,32 @@ def clean_old( house_data ):
     return house_data[house_data.price.notnull() & house_data.surface.notnull() & house_data.arrondissement.notnull()];
 def clean( house_data ):
     return house_data.dropna();
+def getTrainTestData( house_data ):
+    house_data_train, house_data_test = train_test_split(house_data, train_size=0.8)
+    house_data_train_surface = house_data_train.surface.values.reshape(-1,1)
+    house_data_train_price = house_data_train.price.values.reshape(-1,1)
+    house_data_test_surface = house_data_test.surface.values.reshape(-1,1)
+    house_data_test_price = house_data_test.price.values.reshape(-1,1)
+    return house_data_train_surface,house_data_train_price,house_data_test_surface,house_data_test_price;
 def getArrondissement( house_data_raw ):
     return house_data_raw.arrondissement.unique();
 def linearRegression_1( house_data , plot,graphTitle):
-    # Linear Regresssion No Arrondissement
     # Cleaning
     house_data = clean(house_data)
     # Column Selection
     house_data = house_data[['price','surface']]
     # Train Test
-    house_data_train, house_data_test = train_test_split(house_data, train_size=0.8)
-    # Train Test Surface Price
-    house_data_train_surface = house_data_train.surface.values.reshape(-1,1)
-    house_data_train_price = house_data_train.price.values.reshape(-1,1)
-    house_data_test_surface = house_data_test.surface.values.reshape(-1,1)
-    house_data_test_price = house_data_test.price.values.reshape(-1,1)
-    rl = linear_model.LinearRegression()
-    rl.fit(house_data_train_surface, house_data_train_price)
-    house_data_predicted_price = rl.predict(house_data_test_surface)
+    house_data_train_surface,house_data_train_price,house_data_test_surface,house_data_test_price = getTrainTestData(house_data)
+    # Linear Regression
+    linear_regresesion = linear_model.LinearRegression()
+    linear_regresesion.fit(house_data_train_surface, house_data_train_price)
+    house_data_predicted_price = linear_regresesion.predict(house_data_test_surface)
     # Prediciton Error
     mean_squared_error_ = mean_squared_error(house_data_test_price, house_data_predicted_price)
     variance_score = r2_score(house_data_test_price, house_data_predicted_price)
-    coefficient = rl.coef_
-    theta0 = rl.predict([[0]])[0,0]
+    coefficient = linear_regresesion.coef_
+    theta0 = linear_regresesion.predict([[0]])[0,0]
+    # Print Results
     print("Erreur: %.2f"  % mean_squared_error_)
     print('Variance: %.2f' % variance_score)
     print('Theta_0: %.2f' % theta0)
