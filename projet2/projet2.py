@@ -109,7 +109,7 @@ plt.show()
 # print mostFrequent(products,'countries',5)
 
 # density_multi_2
-sampleName = 'countries'
+sampleName = 'brands'
 sampleValues = mostFrequent(products,sampleName,5)
 density_multi_2(products,'sugars_100g',sampleValues,sampleValues)
 density_multi_2(products,'nutrition-score-fr_100g',sampleName,sampleValues)
