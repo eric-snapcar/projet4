@@ -56,8 +56,8 @@ products = clean( products )
 # density_multi
 # density_multi(products,['nutrition-score-uk_100g','nutrition-score-fr_100g'],'nutrition-score-uk-fr_100g')
 
-# scatter 
-scatter(products,'fat_100g','saturated-fat_100g')
+# scatter
+# scatter(products,'fat_100g','saturated-fat_100g')
 
 """
 print(products.columns.values)
