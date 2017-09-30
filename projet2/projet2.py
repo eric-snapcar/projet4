@@ -34,7 +34,7 @@ def density_multi( products, columnNames, xLabel = None, yLabel = 'density'):
     plt.legend()
     plt.show()
     return;
-def density_multi( products, columnNames, xLabel = None, yLabel = 'density'):
+def density_multi_1( products, columnNames, xLabel = None, yLabel = 'density'):
     for index, value in enumerate(columnNames):
         density = stats.kde.gaussian_kde(np.array(products[value].dropna()))
         x = np.arange(0., 8, .1)
@@ -44,6 +44,29 @@ def density_multi( products, columnNames, xLabel = None, yLabel = 'density'):
     plt.ylabel(yLabel)
     plt.legend()
     plt.show()
+    return;
+def density_multi_2( products, featureName, sampleName, sampleValues, xLabel = None, yLabel = 'density'):
+    for index, value in enumerate(sampleValues):
+        products_ = products[products[sampleName] == value]
+        density = stats.kde.gaussian_kde(np.array(products_[featureName].dropna()))
+        x = np.arange(0., 8, .1)
+        plt.plot(x, density(x), linewidth=1.3,label=value)
+    plt.xlabel(xLabel or featureName)
+    plt.ylabel(yLabel)
+    plt.legend()
+    plt.show()
+    return;
+    """
+    for index, value in enumerate(columnNames):
+        density = stats.kde.gaussian_kde(np.array(products[value].dropna()))
+        x = np.arange(0., 8, .1)
+        plt.plot(x, density(x), linewidth=1.3,label=value)
+    if xLabel is not None:
+        plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
+    plt.legend()
+    plt.show()
+    """
     return;
 def scatter( products, column1, column2, xmin = 0, xmax = 100, ymin = 0, ymax = 100 ):
     plt.scatter(products[column1], products[column2], color = '#CB6872', s = 1.325)
@@ -66,16 +89,22 @@ products = clean( products )
 # density
 #density(products,'nutrition-score-uk_100g')
 
-# density_multi
-# density_multi(products,['nutrition-score-uk_100g','nutrition-score-fr_100g'],'nutrition-score-uk-fr_100g')
+# density_multi_1
+# density_multi_1(products,['nutrition-score-uk_100g','nutrition-score-fr_100g'],'nutrition-score-uk-fr_100g')
 
 # scatter
 # scatter(products,'fat_100g','saturated-fat_100g')
 # scatter(products,'nutrition-score-fr_100g','saturated-fat_100g',xmax=50)
 
-#print products.brands.value_counts().head(5).index.tolist()
-print mostFrequent(products,'brands',5)
-print mostFrequent(products,'countries',5)
+# mostFrequent
+# print mostFrequent(products,'brands',5)
+# print mostFrequent(products,'countries',5)
+
+# density_multi_2
+mostFrequentBrands = mostFrequent(products,'brands',5)
+density_multi_2(products,'sugars_100g','brands',mostFrequentBrands)
+density_multi_2(products,'nutrition-score-fr_100g','brands',mostFrequentBrands)
+
 """
 print(products.columns.values)
 ['code' 'url' 'creator' 'created_t' 'created_datetime' 'last_modified_t'
