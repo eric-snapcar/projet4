@@ -111,7 +111,7 @@ plt.show()
 # density_multi_2
 sampleName = 'brands'
 sampleValues = mostFrequent(products,sampleName,5)
-density_multi_2(products,'sugars_100g',sampleValues,sampleValues)
+density_multi_2(products,'sugars_100g',sampleName,sampleValues)
 density_multi_2(products,'nutrition-score-fr_100g',sampleName,sampleValues)
 
 """ column values
