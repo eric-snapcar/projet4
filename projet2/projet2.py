@@ -34,6 +34,17 @@ def density_multi( products, columnNames, xLabel = None, yLabel = 'density'):
     plt.legend()
     plt.show()
     return;
+def density_multi( products, columnNames, xLabel = None, yLabel = 'density'):
+    for index, value in enumerate(columnNames):
+        density = stats.kde.gaussian_kde(np.array(products[value].dropna()))
+        x = np.arange(0., 8, .1)
+        plt.plot(x, density(x), linewidth=1.3,label=value)
+    if xLabel is not None:
+        plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
+    plt.legend()
+    plt.show()
+    return;
 def scatter( products, column1, column2, xmin = 0, xmax = 100, ymin = 0, ymax = 100 ):
     plt.scatter(products[column1], products[column2], color = '#CB6872', s = 1.325)
     plt.xlim(xmin, xmax)
@@ -42,6 +53,8 @@ def scatter( products, column1, column2, xmin = 0, xmax = 100, ymin = 0, ymax = 
     plt.ylabel(column2)
     plt.show()
     return;
+def mostFrequent( products,columnName,head):
+    return products[columnName].value_counts().head(head).index.tolist();
 # On charge le dataset
 
 products = pd.read_csv('products.csv', low_memory=False, delimiter='\t', error_bad_lines=False)
@@ -58,7 +71,11 @@ products = clean( products )
 
 # scatter
 # scatter(products,'fat_100g','saturated-fat_100g')
+# scatter(products,'nutrition-score-fr_100g','saturated-fat_100g',xmax=50)
 
+#print products.brands.value_counts().head(5).index.tolist()
+print mostFrequent(products,'brands',5)
+print mostFrequent(products,'countries',5)
 """
 print(products.columns.values)
 ['code' 'url' 'creator' 'created_t' 'created_datetime' 'last_modified_t'
