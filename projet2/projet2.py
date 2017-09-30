@@ -14,7 +14,13 @@ def hist( products, columnName, xLabel = None, yLabel = 'count',range = [0, 100]
     plt.ylabel(yLabel)
     plt.show()
     return;
-def density( products, columnName, xLabel = None, yLabel = 'density'):
+def hist_2( products,  featureName, yLabel = 'count',range = [0, 100]):
+    products[columnName].plot(kind='hist',bins = bins, range = range , color = '#C65C66', edgecolor='#F59AA2' )
+    plt.xlabel(xLabel or columnName)
+    plt.ylabel(yLabel)
+    plt.show()
+    return;
+def density( products, featureName, xLabel = None, yLabel = 'density'):
     density = stats.kde.gaussian_kde(np.array(products[columnName].dropna()))
     x = np.arange(0., 8, .1)
     plt.plot(x, density(x),color='#060606',linewidth=1.3)
@@ -64,8 +70,8 @@ def scatter( products, column1, column2, xmin = 0, xmax = 100, ymin = 0, ymax = 
     plt.ylabel(column2)
     plt.show()
     return;
-def mostFrequent( products,columnName,head):
-    return products[columnName].value_counts().head(head).index.tolist();
+def mostFrequent( products,columnName,numberOfValue):
+    return products[columnName].value_counts().head(numberOfValue).index.tolist();
 
 # read_csv
 products = pd.read_csv('products.csv', low_memory=False, delimiter='\t', error_bad_lines=False)
@@ -73,6 +79,18 @@ products = pd.read_csv('products.csv', low_memory=False, delimiter='\t', error_b
 # clean
 products = clean( products )
 
+
+"""
+objects = ('Python', 'C++', 'Java', 'Perl', 'Scala', 'Lisp')
+y_pos = np.arange(len(objects))
+performance = [10,8,6,4,2,1]
+
+plt.bar(y_pos, performance, align='center', alpha=0.5)
+plt.xticks(y_pos, objects)
+plt.ylabel('Usage')
+plt.title('Programming language usage')
+plt.show()
+"""
 # hist
 # hist(products,'nutrition-score-uk_100g')
 
@@ -91,9 +109,10 @@ products = clean( products )
 # print mostFrequent(products,'countries',5)
 
 # density_multi_2
-# mostFrequentBrands = mostFrequent(products,'brands',5)
-# density_multi_2(products,'sugars_100g','brands',mostFrequentBrands)
-# density_multi_2(products,'nutrition-score-fr_100g','brands',mostFrequentBrands)
+sampleName = 'countries'
+sampleValues = mostFrequent(products,sampleName,5)
+density_multi_2(products,'sugars_100g',sampleValues,sampleValues)
+density_multi_2(products,'nutrition-score-fr_100g',sampleName,sampleValues)
 
 """ column values
 print(products.columns.values)
