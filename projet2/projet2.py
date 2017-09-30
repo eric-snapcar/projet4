@@ -16,10 +16,10 @@ def hist_1( products, columnName, xLabel = None, yLabel = 'count',range = [0, 10
     return;
 def hist_2( products, sampleName, sampleValues, yLabel = 'count', xLabel = None):
     x_spacing = np.arange(len(sampleValues))
-    count = products[sampleName].value_counts()
+    values_count = products[sampleName].value_counts()
     values = []
     for index, value in enumerate(sampleValues):
-        values.append(count[value])
+        values.append(values_count[value])
     plt.bar(x_spacing, values, align='center', color = '#C65C66', edgecolor='#C65C66' )
     plt.xticks(x_spacing, sampleValues)
     plt.ylabel(yLabel)
@@ -27,23 +27,13 @@ def hist_2( products, sampleName, sampleValues, yLabel = 'count', xLabel = None)
     plt.show()
     return;
 def density( products, featureName, xLabel = None, yLabel = 'density'):
-    density = stats.kde.gaussian_kde(np.array(products[columnName].dropna()))
+    density = stats.kde.gaussian_kde(np.array(products[featureName].dropna()))
     x = np.arange(0., 8, .1)
-    plt.plot(x, density(x),color='#060606',linewidth=1.3)
-    plt.fill_between(x,density(x),color='#9AD8DA', alpha=.45)
-    plt.xlabel(xLabel or columnName)
+    plt.plot(x, density(x))
+    #plt.plot(x, density(x),color='#060606',linewidth=1.3)
+    # plt.fill_between(x,density(x),color='#9AD8DA', alpha=.45)
+    plt.xlabel(xLabel or featureName)
     plt.ylabel(yLabel)
-    plt.show()
-    return;
-def density_multi( products, columnNames, xLabel = None, yLabel = 'density'):
-    for index, value in enumerate(columnNames):
-        density = stats.kde.gaussian_kde(np.array(products[value].dropna()))
-        x = np.arange(0., 8, .1)
-        plt.plot(x, density(x), linewidth=1.3,label=value)
-    if xLabel is not None:
-        plt.xlabel(xLabel)
-    plt.ylabel(yLabel)
-    plt.legend()
     plt.show()
     return;
 def density_multi_1( products, columnNames, xLabel = None, yLabel = 'density'):
@@ -86,31 +76,31 @@ products = pd.read_csv('products.csv', low_memory=False, delimiter='\t', error_b
 products = clean( products )
 
 # hist_1
-# hist_1(products,'nutrition-score-uk_100g')
+hist_1(products,'nutrition-score-fr_100g')
 
 # density
-#density(products,'nutrition-score-uk_100g')
+density(products,'nutrition-score-fr_100g')
 
 # density_multi_1
-# density_multi_1(products,['nutrition-score-uk_100g','nutrition-score-fr_100g'],'nutrition-score-uk-fr_100g')
+density_multi_1(products,['nutrition-score-uk_100g','nutrition-score-fr_100g'],'nutrition-score-uk-fr_100g')
 
 # scatter
-# scatter(products,'fat_100g','saturated-fat_100g')
-# scatter(products,'nutrition-score-fr_100g','saturated-fat_100g',xmax=50)
+scatter(products,'fat_100g','saturated-fat_100g')
+scatter(products,'nutrition-score-fr_100g','saturated-fat_100g',xmax=50)
 
 # mostFrequent
-# print mostFrequent(products,'brands',5)
-# print mostFrequent(products,'countries',5)
+#print mostFrequent(products,'brands',5)
+#print mostFrequent(products,'countries',5)
 
 # density_multi_2
-# sampleName = 'brands'
-# sampleValues = mostFrequent(products,sampleName,5)
-# density_multi_2(products,'sugars_100g',sampleName,sampleValues)
-# density_multi_2(products,'nutrition-score-fr_100g',sampleName,sampleValues)
+sampleName = 'brands'
+sampleValues = mostFrequent(products,sampleName,5)
+density_multi_2(products,'sugars_100g',sampleName,sampleValues)
+density_multi_2(products,'nutrition-score-fr_100g',sampleName,sampleValues)
 
 # hist_2
 sampleName = 'brands'
-sampleValues = mostFrequent(products,sampleName,5)
+sampleValues = mostFrequent(products,sampleName,10)
 hist_2( products,  sampleName, sampleValues )
 
 """ column values
