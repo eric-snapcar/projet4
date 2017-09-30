@@ -9,7 +9,7 @@ def clean( products ):
     thresh = math.ceil(products.shape[0]* 0.6) # au moins 60% du nombre de lignes (arrondi)
     return products.dropna(axis=1,thresh=thresh); # au moins 60% de lignes non nulles
 def hist( products, columnName, xLabel = None, yLabel = 'count',range = [0, 100], bins = 50 ):
-    products[columnName].plot(kind='hist',bins = bins, range = range , color = '#C65C66', edgecolor='#F59AA2', )
+    products[columnName].plot(kind='hist',bins = bins, range = range , color = '#C65C66', edgecolor='#F59AA2' )
     plt.xlabel(xLabel or columnName)
     plt.ylabel(yLabel)
     plt.show()
@@ -17,33 +17,48 @@ def hist( products, columnName, xLabel = None, yLabel = 'count',range = [0, 100]
 def density( products, columnName, xLabel = None, yLabel = 'density'):
     density = stats.kde.gaussian_kde(np.array(products[columnName].dropna()))
     x = np.arange(0., 8, .1)
-    plt.plot(x, density(x))
+    plt.plot(x, density(x),color='#060606',linewidth=1.3)
+    plt.fill_between(x,density(x),color='#9AD8DA', alpha=.45)
     plt.xlabel(xLabel or columnName)
     plt.ylabel(yLabel)
+    plt.show()
+    return;
+def density_multi( products, columnNames, xLabel = None, yLabel = 'density'):
+    for index, value in enumerate(columnNames):
+        density = stats.kde.gaussian_kde(np.array(products[value].dropna()))
+        x = np.arange(0., 8, .1)
+        plt.plot(x, density(x), linewidth=1.3,label=value)
+    if xLabel is not None:
+        plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
+    plt.legend()
+    plt.show()
+    return;
+def scatter( products, column1, column2, xmin = 0, xmax = 100, ymin = 0, ymax = 100 ):
+    plt.scatter(products[column1], products[column2], color = '#CB6872', s = 1.325)
+    plt.xlim(xmin, xmax)
+    plt.ylim(ymin, ymax)
+    plt.xlabel(column1)
+    plt.ylabel(column2)
     plt.show()
     return;
 # On charge le dataset
 
 products = pd.read_csv('products.csv', low_memory=False, delimiter='\t', error_bad_lines=False)
 products = clean( products )
-# Plot de carbohydrates_100g
+
+# hist
 # hist(products,'nutrition-score-uk_100g')
 
+# density
+#density(products,'nutrition-score-uk_100g')
 
-density(products,'nutrition-score-uk_100g')
+# density_multi
+# density_multi(products,['nutrition-score-uk_100g','nutrition-score-fr_100g'],'nutrition-score-uk-fr_100g')
 
-"""
-density = stats.kde.gaussian_kde(np.array(products['nutrition-score-uk_100g'].dropna()))
-x = np.arange(0., 8, .1)
-plt.plot(x, density(x))
-plt.show()
-"""
-"""
-import seaborn as sns
+# scatter 
+scatter(products,'fat_100g','saturated-fat_100g')
 
-sns.set_style('whitegrid')
-sns.kdeplot(np.array(products['nutrition-score-uk_100g']), bw=0.5)
-"""
 """
 print(products.columns.values)
 ['code' 'url' 'creator' 'created_t' 'created_datetime' 'last_modified_t'
