@@ -8,16 +8,22 @@ from scipy import stats
 def clean( products ):
     thresh = math.ceil(products.shape[0]* 0.6) # au moins 60% du nombre de lignes (arrondi)
     return products.dropna(axis=1,thresh=thresh); # au moins 60% de lignes non nulles
-def hist( products, columnName, xLabel = None, yLabel = 'count',range = [0, 100], bins = 50 ):
+def hist_1( products, columnName, xLabel = None, yLabel = 'count',range = [0, 100], bins = 50 ):
     products[columnName].plot(kind='hist',bins = bins, range = range , color = '#C65C66', edgecolor='#F59AA2' )
     plt.xlabel(xLabel or columnName)
     plt.ylabel(yLabel)
     plt.show()
     return;
-def hist_2( products,  featureName, yLabel = 'count',range = [0, 100]):
-    products[columnName].plot(kind='hist',bins = bins, range = range , color = '#C65C66', edgecolor='#F59AA2' )
-    plt.xlabel(xLabel or columnName)
+def hist_2( products, sampleName, sampleValues, yLabel = 'count', xLabel = None):
+    x_spacing = np.arange(len(sampleValues))
+    count = products[sampleName].value_counts()
+    values = []
+    for index, value in enumerate(sampleValues):
+        values.append(count[value])
+    plt.bar(x_spacing, values, align='center', color = '#C65C66', edgecolor='#C65C66' )
+    plt.xticks(x_spacing, sampleValues)
     plt.ylabel(yLabel)
+    plt.xlabel(xLabel or sampleName)
     plt.show()
     return;
 def density( products, featureName, xLabel = None, yLabel = 'density'):
@@ -79,20 +85,8 @@ products = pd.read_csv('products.csv', low_memory=False, delimiter='\t', error_b
 # clean
 products = clean( products )
 
-
-"""
-objects = ('Python', 'C++', 'Java', 'Perl', 'Scala', 'Lisp')
-y_pos = np.arange(len(objects))
-performance = [10,8,6,4,2,1]
-
-plt.bar(y_pos, performance, align='center', alpha=0.5)
-plt.xticks(y_pos, objects)
-plt.ylabel('Usage')
-plt.title('Programming language usage')
-plt.show()
-"""
-# hist
-# hist(products,'nutrition-score-uk_100g')
+# hist_1
+# hist_1(products,'nutrition-score-uk_100g')
 
 # density
 #density(products,'nutrition-score-uk_100g')
@@ -113,6 +107,11 @@ plt.show()
 # sampleValues = mostFrequent(products,sampleName,5)
 # density_multi_2(products,'sugars_100g',sampleName,sampleValues)
 # density_multi_2(products,'nutrition-score-fr_100g',sampleName,sampleValues)
+
+# hist_2
+sampleName = 'brands'
+sampleValues = mostFrequent(products,sampleName,5)
+hist_2( products,  sampleName, sampleValues )
 
 """ column values
 print(products.columns.values)
