@@ -257,8 +257,6 @@ print('Format des données',nutri_data_raw.shape)
 
 #%%------------------------------ Sélection des variables à étudier ---------------------
 """
-A RAJOUTER L INTRO DU KAGGLE
-
 1 - Etude sur les données
 
 A l'issue de cette partie nous aurons les variables et les données que nous souhaitons étudier.
@@ -393,7 +391,7 @@ filter_spe(nutri_data,'pnns_groups_1',(nutri_data['carbohydrates_100g']<3))#sauc
 
 #%%
 #nutritional score
-# A RAJOUTER le double chart un uk l'autre fr
+
 """
 2.2 - Score nutritionnelle
 
@@ -483,7 +481,7 @@ super_scatter(nutri_data,lis_bivariates,3)
 
 #%%
 #Plot le heatmap de corrélation entre toutes les variables retenues
-corr = nutri_data.corr(min_periods = 10000)
+corr = nutri_data.corr(method='spearman',min_periods = 10000)
 sns.heatmap(corr, xticklabels=corr.columns.values, yticklabels=corr.columns.values)
 
 """
@@ -509,7 +507,8 @@ filter_spe(nutri_data,'product_name',(nutri_data['fat_100g']<3) & (nutri_data['p
 scatter(nutri_data,'saturated-fat_100g','fat_100g')
 
 # la plupart des produits ayant de la graisse contient aussi de la graisse saturé. Certains produits contiennent énormément des deux.
-print(nutri_data[(nutri_data['fat_100g']>90) & (nutri_data['saturated-fat_100g']>90)]['product_name'].dropna())
+filter_spe(nutri_data,'product_name',(nutri_data['fat_100g']>90) & (nutri_data['saturated-fat_100g']>90))
+
 
 # surtout de l'huile de coco
 #%%
@@ -522,9 +521,9 @@ scatter(nutri_data,'carbohydrates_100g','fat_100g')
 Notons l'absence de produits au milieu
 
 """
-print(nutri_data[(nutri_data['carbohydrates_100g']>95) & (nutri_data['fat_100g']<1)]['product_name'].dropna()) # bonbons / sucre
+filter_spe(nutri_data,'product_name',(nutri_data['carbohydrates_100g']>99) & (nutri_data['fat_100g']<1)) # bonbons / sucre
 print()
-print(nutri_data[(nutri_data['carbohydrates_100g']<1) & (nutri_data['fat_100g']>95)]['product_name'].dropna()) # huile
+filter_spe(nutri_data,'product_name',(nutri_data['carbohydrates_100g']<1) & (nutri_data['fat_100g']>99)) # huile
 #%%
 """
 3.4 graisse saturées et score nutritionnel 
