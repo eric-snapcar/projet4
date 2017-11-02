@@ -194,7 +194,12 @@ def recommend_clustering(data, info,id_film):
         if size_cluster < 5:
             lis_index = data[data['cluster']==cluster].sort_values('new_score').head(size_cluster).index.tolist()
         else:
-            lis_index = data[data['cluster']==cluster].sort_values('new_score').head(5).index.tolist()
+            if index_ in data[data['cluster']==cluster].sort_values('new_score').head(5).index.tolist():
+                lis_index = data[data['cluster']==cluster].sort_values('new_score').head(6).index.tolist()
+                lis_index = lis_index.remove(index)
+            else:
+                lis_index = data[data['cluster']==cluster].sort_values('new_score').head(5).index.tolist()
+                
         recommendations = info.iloc[lis_index]
     return movie, recommendations
 def print_(string):
@@ -348,7 +353,7 @@ info_2 = pd.concat([info_2, labels.to_frame('cluster')], axis = 1)
 data_2 = pd.concat([data_2, labels.to_frame('cluster')], axis = 1)
 #%% 
 # rajouter un histo des cluster avec moins de 5
-film_id = 3
+film_id = 9
 
 movie, recommendations = recommend_clustering(data_2, info_2, film_id)
 #%%
