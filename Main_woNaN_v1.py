@@ -316,6 +316,7 @@ En prenant les variables les plus corrélées on obtient un score r2 d'environ 0
 On ne prendra pas le gross mais la varibale très corrélé à elle 'num_voted_users' cela fait sens : 
 Plus de personnes ont vu le film, plus il y a de votes
 '''
+data[['num_voted_users','gross']].corr() #64%
 #%%---------------------- Sélection de variables ----------------------
 data_1, info_1 = cleanAndSelect_v1(data)
 
