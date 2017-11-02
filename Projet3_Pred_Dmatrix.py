@@ -134,7 +134,7 @@ def normalize(data):
     return data_normalized
 #%%
 def init():
-    data = pd.read_csv('movie_metadata.csv', sep=",")
+    data = pd.read_csv('data.csv', sep=",")
     global info_1
     global d_matrix
     data_1, info_1 = cleanAndSelect_v1(data)
