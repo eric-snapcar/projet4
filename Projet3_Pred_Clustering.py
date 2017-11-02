@@ -115,7 +115,7 @@ def normalize(data):
     return data_normalized
 #%%
 def init():
-    data = pd.read_csv('movie_metadata.csv', sep=",")
+    data = pd.read_csv('data.csv', sep=",")
     global info_2
     global data_2
     data_2, info_2 = cleanAndSelect_v2(data)
