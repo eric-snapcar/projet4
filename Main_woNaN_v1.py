@@ -10,7 +10,6 @@ save = False
 import pandas as pd
 import numpy as np
 from sklearn import preprocessing
-from sklearn.preprocessing import Imputer
 from pandas import get_dummies
 from sklearn.cluster import KMeans
 from sklearn import metrics
@@ -168,7 +167,7 @@ def distance_matrix(data):
     dist_ = pdist(data, 'euclidean')
     dist_ = pd.DataFrame(squareform(dist_))
     return dist_
-def getRecommendation(index_bis , info, distanceMatrix):
+def getRecommendation_(index_bis , info, distanceMatrix):
     # renvoie les 5 éléments les plus proches de 'index_bis' dans 'distance_matrix'
     nsmallest_list = distanceMatrix.nsmallest(6, index_bis).index.values.tolist()
     del nsmallest_list[0]                                         
@@ -181,8 +180,8 @@ def recommend(data, info, film_id, d_matrix):
         return None, None
     else:
         index_ = index[0]
-    return info.iloc[[index_]] , getRecommendation(index_,info,d_matrix)
-def recommend_clustering(data, info,id_film):
+    return info.iloc[[index_]] , getRecommendation_(index_,info,d_matrix)
+def recommend_clustering(data, info,film_id):
     index = info.index[info['film_id'] == film_id].tolist()
     if len(index) == 0:
         return None, None
@@ -196,7 +195,7 @@ def recommend_clustering(data, info,id_film):
         else:
             if index_ in data[data['cluster']==cluster].sort_values('new_score').head(5).index.tolist():
                 lis_index = data[data['cluster']==cluster].sort_values('new_score').head(6).index.tolist()
-                lis_index = lis_index.remove(index)
+                lis_index.remove(index_)
             else:
                 lis_index = data[data['cluster']==cluster].sort_values('new_score').head(5).index.tolist()
                 
@@ -331,7 +330,7 @@ data_1_trans = pca.transform(data_1_norm)
 pca.explained_variance_ratio_.sum()
 
 #%%
-plotSilhouette(data_1_trans, 2, 103, 25) #pas terrible, trop de variables
+plotSilhouette(data_1_trans, 2, 103, 25) #pas terrible, trop de variables categoriels et trop éparses
 #%%------------------- Prédiction par clustering v2 -------------------
 #%%
 data_2, info_2 = cleanAndSelect_v2(data)
@@ -353,7 +352,7 @@ info_2 = pd.concat([info_2, labels.to_frame('cluster')], axis = 1)
 data_2 = pd.concat([data_2, labels.to_frame('cluster')], axis = 1)
 #%% 
 # rajouter un histo des cluster avec moins de 5
-film_id = 9
+film_id = 283
 
 movie, recommendations = recommend_clustering(data_2, info_2, film_id)
 #%%
@@ -387,4 +386,3 @@ else:
     print(movie[selected_columns_display].to_string(index=False,header=False))
     print_("Recommendations:")
     print(recommendations[selected_columns_display].to_string(index=False,header=False))
-
