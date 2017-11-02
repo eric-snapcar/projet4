@@ -92,12 +92,12 @@ def recommend_clustering(data, info,film_id):
         movie = info.iloc[[index_]]
         cluster = movie['cluster'].iloc[0]
         size_cluster = data[data['cluster']==cluster].shape[0]
-        if size_cluster < 5:
+        if size_cluster < 6:
             lis_index = data[data['cluster']==cluster].sort_values('new_score').head(size_cluster).index.tolist()
         else:
             if index_ in data[data['cluster']==cluster].sort_values('new_score').head(5).index.tolist():
                 lis_index = data[data['cluster']==cluster].sort_values('new_score').head(6).index.tolist()
-                lis_index = lis_index.remove(index)
+                lis_index.remove(index_)
             else:
                 lis_index = data[data['cluster']==cluster].sort_values('new_score').head(5).index.tolist()
                 
