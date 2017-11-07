@@ -23,7 +23,7 @@ from sklearn.metrics import r2_score, mean_squared_error
 #%%
 def cleanAndSelect_v1(data):
     #selectionne les variables listées dans car_selected ['var1', 'var2', 'var3'], 
-    var_selected =['plot_keywords','num_voted_users','actor_1_name','actor_2_name','actor_3_name','imdb_score','genres','duration','director_name','budget']
+    var_selected =['language','plot_keywords','num_voted_users','actor_1_name','actor_2_name','actor_3_name','imdb_score','genres','duration','director_name','budget']
                                                             
     data_ = data[['movie_title','title_year']+var_selected]                                                       
     data_ = data_.dropna()
@@ -37,28 +37,28 @@ def cleanAndSelect_v1(data):
     df2 = info[['movie_title','film_id','genres','director_name','title_year']].sample(10)
     print(df1.append(df2))
     
-         
-    #Ajout des genres
-    data_ = addColumnForEachWord(data_,'genres', 0)
-     
-    # Ajout des mots clés
-    data_ = addColumnForEachWord(data_,'plot_keywords', 20)
-     
     #Ajout des réalisateurs et des langues
     data_ = addColumnForEachContent(data_,'director_name', 5)
-     
-       
+    data_ = addColumnForEachContent(data_,'language', 5)
+    
+    #Ajout des genres
+    data_ = addColumnForEachWord(data_,'genres', 0)
+      
+    # Ajout des mots clés
+    data_ = addColumnForEachWord(data_,'plot_keywords', 20)
+      
+    
     #Ajout des Acteurs (présence de l'acteur dans le film 1 ou 0, peu importe Acteur1, Acteur 2, Acteur3)
     data_['actors']= data_['actor_1_name']+'|'+data_['actor_2_name']+'|'+data_['actor_3_name']
     data_ = addColumnForEachWord(data_,'actors', 5)
     data_ = data_.drop(['actor_1_name','actor_3_name','actor_2_name'], axis=1)   
-     
+      
     #Nouveau score qui sublime les haut score avec beaucoup de votes et pénalise les score faibles avec beaucoup de vote
     score_ = data['imdb_score'].divide(10)
     num_voter_ = (data['num_voted_users']-data['num_voted_users'].mean()).divide(data['num_voted_users'].max())
     data_['new_score'] = score_.multiply(num_voter_)
     data_ = data_.drop(['imdb_score'], axis = 1)
-              
+
     return data_, info
 #%%
 def cleanAndSelect_v2(data):
@@ -89,7 +89,46 @@ def cleanAndSelect_v2(data):
     
          
     return data_, info
+#%%
+def cleanAndSelect_vf(data):
+    #selectionne les variables listées dans car_selected ['var1', 'var2', 'var3'], 
+    var_selected =['language','num_voted_users','actor_1_name','actor_2_name','actor_3_name','imdb_score','genres','duration','director_name','budget']
+                                                            
+    data_ = data[['movie_title','title_year']+var_selected]                                                       
+    data_ = data_.dropna()
+    data_ = data_.drop_duplicates(['movie_title','title_year'])
+    data_.index.name = 'film_id'
+    data_ = data_.reset_index()
+    info = data_
+    data_ = data_[var_selected].copy()
 
+    df1 = info[['movie_title','film_id','genres','director_name','title_year']].head(10)
+    df2 = info[['movie_title','film_id','genres','director_name','title_year']].sample(10)
+    print(df1.append(df2))
+    
+    #Ajout des réalisateurs et des langues
+    data_ = addColumnForEachContent(data_,'director_name', 0)
+    data_ = addColumnForEachContent(data_,'language', 0)
+    
+    #Ajout des genres
+    data_ = addColumnForEachWord(data_,'genres', 0)
+      
+    # Ajout des mots clés
+    #data_ = addColumnForEachWord(data_,'plot_keywords', 20)
+      
+    
+    #Ajout des Acteurs (présence de l'acteur dans le film 1 ou 0, peu importe Acteur1, Acteur 2, Acteur3)
+    data_['actors']= data_['actor_1_name']+'|'+data_['actor_2_name']+'|'+data_['actor_3_name']
+    data_ = addColumnForEachWord(data_,'actors', 0)
+    data_ = data_.drop(['actor_1_name','actor_3_name','actor_2_name'], axis=1)   
+      
+    #Nouveau score qui sublime les haut score avec beaucoup de votes et pénalise les score faibles avec beaucoup de vote
+    score_ = data['imdb_score'].divide(10)
+    num_voter_ = (data['num_voted_users']-data['num_voted_users'].mean()).divide(data['num_voted_users'].max())
+    data_['new_score'] = score_.multiply(num_voter_)
+    data_ = data_.drop(['imdb_score'], axis = 1)
+
+    return data_, info
 
 #%%
 def feat_to_drop(data, threshold):
@@ -180,7 +219,17 @@ def recommend(data, info, film_id, d_matrix):
         return None, None
     else:
         index_ = index[0]
-    return info.iloc[[index_]] , getRecommendation_(index_,info,d_matrix)
+    movie = info.iloc[[index_]]
+    recommendations = getRecommendation_(index_,info,d_matrix)
+    if movie is None or recommendations is None:
+        print('Sorry, we are not able to recommend you a movie based on the selected movie')
+    else:
+        selected_columns_display = ['movie_title', 'genres','director_name','title_year']
+        print_("Selected Movie:")
+        print(movie[selected_columns_display].to_string(index=False,header=False))
+        print_("Recommendations:")
+        print(recommendations[selected_columns_display].to_string(index=False,header=False))
+    return movie, recommendations
 def recommend_clustering(data, info,film_id):
     index = info.index[info['film_id'] == film_id].tolist()
     if len(index) == 0:
@@ -200,7 +249,16 @@ def recommend_clustering(data, info,film_id):
                 lis_index = data[data['cluster']==cluster].sort_values('new_score').head(5).index.tolist()
                 
         recommendations = info.iloc[lis_index]
-    return movie, recommendations
+        
+        if movie is None or recommendations is None:
+            print('Sorry, we are not able to recommend you a movie based on the selected movie')
+        else:
+            selected_columns_display = ['movie_title', 'genres','director_name','title_year']
+            print_("Selected Movie:")
+            print(movie[selected_columns_display].to_string(index=False,header=False))
+            print_("Recommendations:")
+            print(recommendations[selected_columns_display].to_string(index=False,header=False))
+            return movie, recommendations
 def print_(string):
     # Format de print
     separator = "---------------------------"
@@ -285,6 +343,12 @@ def get_zeros(data):
         lis_zeros.append(num_zero)
     data_ = pd.DataFrame(lis_zeros, index=data.columns.tolist())
     return data_
+def pca_trans(data_norm):
+    pca = decomposition.PCA(n_components = 250)
+    pca.fit(data_norm)
+    data_trans = pca.transform(data_norm)
+    pca.explained_variance_ratio_.sum()
+    return data_trans
 #%% -------------------------------- Chargement -----------------
 pd.set_option('display.width', 1000)
 data = pd.read_csv('movie_metadata.csv', sep=",")
@@ -300,10 +364,6 @@ bar_chart(get_zeros(data), '% de valeurs nulles par variable')
 Gross et Budget sont les deux variables avec le plus de NaN
 Popularité d'un film ne peut être représentée par FB like parce que les vieux films n'ont pas forcément de de page fb
 '''
-data['profitability'] = data['gross'].divide(data['budget'])
-#data['profitability'].isnull().sum()
-#data['budget'].isnull().sum()
-#%%
 heat_map(data,method='spearman',min_periods=100)
 '''
 Sans surprise le budget est très corrélé au Gross mais aussi du nombre de voted users
@@ -322,26 +382,20 @@ data_1, info_1 = cleanAndSelect_v1(data)
 
 #%% rescaling des données et calcul dela matrice de distance
 data_1_norm = normalize(data_1) 
-#%% --------------------- Prédiction par clustering v1 ----------------------
+#%% --------------------- Prédiction par clustering v1 (base complète filtrée) ----------------------
 pca_plot(data_1_norm, 2, 253, 50,'v1') #78% pour 250 variables
 #%%
-pca = decomposition.PCA(n_components = 250)
-pca.fit(data_1_norm)
-data_1_trans = pca.transform(data_1_norm)
-pca.explained_variance_ratio_.sum()
+data_1_trans = pca_trans(data_1_norm)
 
 #%%
 plotSilhouette(data_1_trans, 2, 103, 25) #pas terrible, trop de variables categoriels et trop éparses
-#%%------------------- Prédiction par clustering v2 -------------------
+#%%------------------- Prédiction par clustering v2 (base tronquée) -------------------
 #%%
 data_2, info_2 = cleanAndSelect_v2(data)
 data_2_norm = normalize(data_2) 
 pca_plot(data_2_norm, 2, 29, 5,'v2') #86% pour 12 variables
 #%%
-pca = decomposition.PCA(n_components = 12)
-pca.fit(data_2_norm)
-data_2_trans = pca.transform(data_2_norm)
-pca.explained_variance_ratio_.sum()
+data_2_trans = pca_trans(data_2_norm)
 
 #%%
 plotSilhouette(data_2_trans, 2, 503, 100,'v2') #200 clusters, coef = 0,75
@@ -353,22 +407,11 @@ info_2 = pd.concat([info_2, labels.to_frame('cluster')], axis = 1)
 data_2 = pd.concat([data_2, labels.to_frame('cluster')], axis = 1)
 #%% 
 # rajouter un histo des cluster avec moins de 5
-film_id = 283
+film_id = 3
 
 movie, recommendations = recommend_clustering(data_2, info_2, film_id)
-#%%
-if movie is None or recommendations is None:
-    print('Sorry, we are not able to recommend you a movie based on the selected movie')
-else:
-    selected_columns_display = ['movie_title', 'genres','director_name','title_year']
-    print_("Selected Movie:")
-    print(movie[selected_columns_display].to_string(index=False,header=False))
-    print_("Recommendations:")
-    print(recommendations[selected_columns_display].to_string(index=False,header=False))
-
-
-#%% -------------------- Prédiction par matrice de distance -------------------
-dmatrix = distance_matrix(data_1_norm)
+#%% -------------------- Prédiction par matrice de distance avec base tronquée -------------------
+dmatrix_2 = distance_matrix(data_2_norm)
 
 #%% Recommandation avec la matrice de distance
 '''id du film'''
@@ -378,12 +421,34 @@ dmatrix = distance_matrix(data_1_norm)
 # 283 Gladiator
 film_id = 3
 
-movie, recommendations = recommend(data_1, info_1, film_id, dmatrix)
-if movie is None or recommendations is None:
-    print('Sorry, we are not able to recommend you a movie based on the selected movie')
-else:
-    selected_columns_display = ['movie_title', 'genres','director_name','title_year']
-    print_("Selected Movie:")
-    print(movie[selected_columns_display].to_string(index=False,header=False))
-    print_("Recommendations:")
-    print(recommendations[selected_columns_display].to_string(index=False,header=False))
+movie, recommendations = recommend(data_2, info_2, film_id, dmatrix_2)
+#%% -------------------- Prédiction par matrice de distance avec base complète filtrée -------------------
+dmatrix_1 = distance_matrix(data_1_norm)
+
+#%% Recommandation avec la matrice de distance
+'''id du film'''
+# film_id = 9 Harry Potter
+# film_id = 3 The Dark Knight Rises
+# film_id = 2607 The King's Speech
+# 283 Gladiator
+film_id = 32
+
+movie, recommendations = recommend(data_1, info_1, film_id, dmatrix_1)
+#%% -------------------- Prédiction par matrice de distance avec base complète non filtrée (v_final) -------------------
+
+data_f, info_f = cleanAndSelect_vf(data)
+data_f_norm = normalize(data_f)                                                                                            
+dmatrix_f = distance_matrix(data_f_norm)
+
+#%% Recommandation avec la matrice de distance
+'''id du film'''
+# film_id = 9 Harry Potter
+# film_id = 3 The Dark Knight Rises
+# film_id = 2607 The King's Speech
+# film_id = 283 Gladiator
+# film_id = 32 Iron Man 3
+# film_id = 30 Skyfall
+# film_id = 26 Titanic
+film_id = 26
+
+movie, recommendations = recommend(data_f, info_f, film_id, dmatrix_f)
