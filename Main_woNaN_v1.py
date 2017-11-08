@@ -345,8 +345,8 @@ def get_zeros(data):
         lis_zeros.append(num_zero)
     data_ = pd.DataFrame(lis_zeros, index=data.columns.tolist())
     return data_.divide(data.shape[0]).multiply(100)
-def pca_trans(data_norm):
-    pca = decomposition.PCA(n_components = 250)
+def pca_trans(data_norm, n_components):
+    pca = decomposition.PCA(n_components)
     pca.fit(data_norm)
     data_trans = pca.transform(data_norm)
     pca.explained_variance_ratio_.sum()
@@ -404,7 +404,7 @@ data_1_norm = normalize(data_1)
 #%% --------------------- Prédiction par clustering v1 (base complète filtrée) ----------------------
 pca_plot(data_1_norm, 2, 253, 50,'v1') #78% pour 250 variables
 #%%
-data_1_trans = pca_trans(data_1_norm)
+data_1_trans = pca_trans(data_1_norm, 250)
 
 #%%
 plotSilhouette(data_1_trans, 2, 103, 25) #pas terrible, trop de variables categoriels et trop éparses
@@ -414,7 +414,7 @@ data_2, info_2 = cleanAndSelect_v2(data)
 data_2_norm = normalize(data_2) 
 pca_plot(data_2_norm, 2, 29, 5,'v2') #86% pour 12 variables
 #%%
-data_2_trans = pca_trans(data_2_norm)
+data_2_trans = pca_trans(data_2_norm, 12)
 
 #%%
 plotSilhouette(data_2_trans, 2, 503, 100,'v2') #200 clusters, coef = 0,75
@@ -426,7 +426,7 @@ info_2 = pd.concat([info_2, labels.to_frame('cluster')], axis = 1)
 data_2 = pd.concat([data_2, labels.to_frame('cluster')], axis = 1)
 #%% 
 # rajouter un histo des cluster avec moins de 5
-film_id = 3
+film_id = 30
 
 movie, recommendations = recommend_clustering(data_2, info_2, film_id)
 #%% -------------------- Prédiction par matrice de distance avec base tronquée -------------------
