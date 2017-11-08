@@ -54,8 +54,8 @@ def cleanAndSelect_v1(data):
     data_ = data_.drop(['actor_1_name','actor_3_name','actor_2_name'], axis=1)   
       
     #Nouveau score qui sublime les haut score avec beaucoup de votes et pénalise les score faibles avec beaucoup de vote
-    score_ = data['imdb_score'].divide(10)
-    num_voter_ = (data['num_voted_users']-data['num_voted_users'].mean()).divide(data['num_voted_users'].max())
+    score_ = (data['imdb_score']-data['imdb_score'].mean()).divide(10)
+    num_voter_ = data['num_voted_users'].divide(data['num_voted_users'].max())
     data_['new_score'] = score_.multiply(num_voter_)
     data_ = data_.drop(['imdb_score'], axis = 1)
 
@@ -82,17 +82,16 @@ def cleanAndSelect_v2(data):
      
        
     #Nouveau score qui sublime les haut score avec beaucoup de votes et pénalise les score faibles avec beaucoup de vote
-    score_ = data['imdb_score'].divide(10)
-    num_voter_ = (data['num_voted_users']-data['num_voted_users'].mean()).divide(data['num_voted_users'].max())
+    score_ = (data['imdb_score']-data['imdb_score'].mean()).divide(10)
+    num_voter_ = data['num_voted_users'].divide(data['num_voted_users'].max())
     data_['new_score'] = score_.multiply(num_voter_)
     data_ = data_.drop(['imdb_score'], axis = 1)
-    
          
     return data_, info
 #%%
 def cleanAndSelect_vf(data):
     #selectionne les variables listées dans car_selected ['var1', 'var2', 'var3'], 
-    var_selected =['language','num_voted_users','actor_1_name','actor_2_name','actor_3_name','imdb_score','genres','duration','director_name','budget']
+    var_selected =['language','num_voted_users','actor_1_name','actor_2_name','actor_3_name','imdb_score','genres','duration','director_name']
                                                             
     data_ = data[['movie_title','title_year']+var_selected]                                                       
     data_ = data_.dropna()
@@ -123,11 +122,11 @@ def cleanAndSelect_vf(data):
     data_ = data_.drop(['actor_1_name','actor_3_name','actor_2_name'], axis=1)   
       
     #Nouveau score qui sublime les haut score avec beaucoup de votes et pénalise les score faibles avec beaucoup de vote
-    score_ = data['imdb_score'].divide(10)
-    num_voter_ = (data['num_voted_users']-data['num_voted_users'].mean()).divide(data['num_voted_users'].max())
+    score_ = (data['imdb_score']-data['imdb_score'].mean()).divide(10)
+    num_voter_ = data['num_voted_users'].divide(data['num_voted_users'].max())
     data_['new_score'] = score_.multiply(num_voter_)
     data_ = data_.drop(['imdb_score'], axis = 1)
-
+    
     return data_, info
 
 #%%
@@ -270,9 +269,11 @@ def heat_map(data, method, min_periods, save=False):
         
     if save:
         plt.tight_layout()
+        plt.title('Matrice de corrélation des variables')
         plt.savefig('heatmap.png')
         plt.close()
     else:
+        plt.title('Matrice de corrélation des variables')
         plt.show()
     return;
 def scatter(data, columnName1, columnName2, xmin = 0, xmax = 100, ymin = 0, ymax = 100, save=False):
@@ -296,30 +297,31 @@ def linear_reg_param(data, lis_var, y_var):
     ind_na = [x for x in ind_tot if x not in ind]
     y_ = data[y_var].iloc[ind]
     ind_y=y_.index.values.tolist()
-    y_=y_.dropna()
+    y_ = y_.dropna()
     index_na = [x for x in ind_y if x not in y_.index.values.tolist()]
-    data_=data_.drop(index_na)
-    #data_scaled = preprocessing.scale(data_)
-    #data_scaled = preprocessing.scale(data_)
+    data_ = data_.drop(index_na)
+    
+    data_= normalize(data_) 
     
     
     # On décompose le dataset et on le transforme en matrices pour pouvoir effectuer notre calcul
     X = np.matrix(data_.as_matrix())
-    
+     
     y = np.matrix(y_).T
-    
+     
     xtrain, xtest, ytrain, ytest = train_test_split(X, y, train_size=0.8)
-    
+     
     r_base = linear_model.LinearRegression()
     r_base.fit(xtrain, ytrain)
     y_predicted = r_base.predict(xtest)
-    
-      
+     
+       
     score_r2 = r2_score(ytest, y_predicted)
     MSE =mean_squared_error(ytest, y_predicted)
-    
+     
     print('Score r2: ',score_r2)
     print('Mean Squared Error: ',MSE)
+
     
     return score_r2, MSE, ind_na
 def bar_chart(serie, title=None, ylabel=None, xlabel=None):
@@ -342,35 +344,52 @@ def get_zeros(data):
         num_zero = data[column][data[column] ==0].count()
         lis_zeros.append(num_zero)
     data_ = pd.DataFrame(lis_zeros, index=data.columns.tolist())
-    return data_
+    return data_.divide(data.shape[0]).multiply(100)
 def pca_trans(data_norm):
     pca = decomposition.PCA(n_components = 250)
     pca.fit(data_norm)
     data_trans = pca.transform(data_norm)
     pca.explained_variance_ratio_.sum()
     return data_trans
+def print_var(data, info = None):
+    #Affiche les variables dans le dataframe df, le data type, ainsi que les 5 premiers éléments si 'afficher'='oui'
+    
+    print('Variables')
+    print()
+    for var in list(data):
+        print('-------------------------------------------------')
+        #print(var,' (',df[var].dtype,')','     ',df[var][0],',',df[var][1],',',df[var][2],',',df[var][3],',',df[var][4]) # A améliorer
+        print(var,' (',data[var].dtype,')','      ')
+        if info == 'oui':
+            print(data[var][0:4])
+    print('-------------------------------------------------')
+    print()
+    print('Le nombre de variables est de :',len(list(data)))
+    return
 #%% -------------------------------- Chargement -----------------
 pd.set_option('display.width', 1000)
 data = pd.read_csv('movie_metadata.csv', sep=",")
 #%% -------------------------------- Etude exploratoire -----------------
 percent_na = data.isnull().sum().divide(data.shape[0]).sort_values(ascending = False).multiply(100)
-bar_chart(percent_na, '% de valeurs inexistantes par variable')
+bar_chart(percent_na, '% de valeurs inexistantes par variable', '%', 'Variables')
 #%%
-bar_chart(get_zeros(data), '% de valeurs nulles par variable')
-    
+bar_chart(get_zeros(data), '% de valeurs nulles par variable','%','Variables')
+#%%
+data_dup = data.drop_duplicates()
+nb_duplicates = data.shape[0]-data_dup.shape[0]  
     
 #%% ------------------------- Prédisons les valeurs vides --------------
 '''
 Gross et Budget sont les deux variables avec le plus de NaN
 Popularité d'un film ne peut être représentée par FB like parce que les vieux films n'ont pas forcément de de page fb
 '''
-heat_map(data,method='spearman',min_periods=100)
+heat_map(data,method='spearman',min_periods=100, save=True)
 '''
 Sans surprise le budget est très corrélé au Gross mais aussi du nombre de voted users
 Le Gross est fortement corrélé au budget, num users for review, num voted users
 '''
 #%%
-score_r2, MSE, ind_na = linear_reg_param(data, ['num_voted_users','budget'], 'gross')
+score_r2, MSE, ind_na = linear_reg_param(data[data['country']=='USA'].reset_index(), ['num_voted_users','budget'], 'gross')
 '''
 En prenant les variables les plus corrélées on obtient un score r2 d'environ 0,45 ce qui est très faible
 On ne prendra pas le gross mais la varibale très corrélé à elle 'num_voted_users' cela fait sens : 
