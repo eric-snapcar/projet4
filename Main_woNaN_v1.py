@@ -110,11 +110,7 @@ def cleanAndSelect_vf(data):
     data_ = addColumnForEachContent(data_,'language', 0)
     
     #Ajout des genres
-    data_ = addColumnForEachWord(data_,'genres', 0)
-      
-    # Ajout des mots clés
-    #data_ = addColumnForEachWord(data_,'plot_keywords', 20)
-      
+    data_ = addColumnForEachWord(data_,'genres', 0)     
     
     #Ajout des Acteurs (présence de l'acteur dans le film 1 ou 0, peu importe Acteur1, Acteur 2, Acteur3)
     data_['actors']= data_['actor_1_name']+'|'+data_['actor_2_name']+'|'+data_['actor_3_name']
@@ -450,7 +446,7 @@ dmatrix_1 = distance_matrix(data_1_norm)
 # film_id = 3 The Dark Knight Rises
 # film_id = 2607 The King's Speech
 # 283 Gladiator
-film_id = 32
+film_id = 9
 
 movie, recommendations = recommend(data_1, info_1, film_id, dmatrix_1)
 #%% -------------------- Prédiction par matrice de distance avec base complète non filtrée (v_final) -------------------
@@ -468,6 +464,6 @@ dmatrix_f = distance_matrix(data_f_norm)
 # film_id = 32 Iron Man 3
 # film_id = 30 Skyfall
 # film_id = 26 Titanic
-film_id = 26
+film_id = 1908
 
 movie, recommendations = recommend(data_f, info_f, film_id, dmatrix_f)

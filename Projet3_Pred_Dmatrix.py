@@ -15,11 +15,12 @@ Created on Thu Nov  2 09:20:04 2017
 import pandas as pd
 from sklearn import preprocessing
 from pandas import get_dummies
+from sklearn import decomposition
 from scipy.spatial.distance import pdist, squareform
 #%%
-def cleanAndSelect_v1(data):
+def cleanAndSelect_vf(data):
     #selectionne les variables listées dans car_selected ['var1', 'var2', 'var3'], 
-    var_selected =['plot_keywords','num_voted_users','actor_1_name','actor_2_name','actor_3_name','imdb_score','genres','duration','director_name','budget']
+    var_selected =['language','num_voted_users','actor_1_name','actor_2_name','actor_3_name','imdb_score','genres','duration','director_name']
                                                             
     data_ = data[['movie_title','title_year']+var_selected]                                                       
     data_ = data_.dropna()
@@ -33,28 +34,24 @@ def cleanAndSelect_v1(data):
     df2 = info[['movie_title','film_id','genres','director_name','title_year']].sample(10)
     print(df1.append(df2))
     
-         
-    #Ajout des genres
-    data_ = addColumnForEachWord(data_,'genres', 0)
-     
-    # Ajout des mots clés
-    data_ = addColumnForEachWord(data_,'plot_keywords', 20)
-     
     #Ajout des réalisateurs et des langues
-    data_ = addColumnForEachContent(data_,'director_name', 5)
-     
-       
+    data_ = addColumnForEachContent(data_,'director_name', 0)
+    data_ = addColumnForEachContent(data_,'language', 0)
+    
+    #Ajout des genres
+    data_ = addColumnForEachWord(data_,'genres', 0)  
+    
     #Ajout des Acteurs (présence de l'acteur dans le film 1 ou 0, peu importe Acteur1, Acteur 2, Acteur3)
     data_['actors']= data_['actor_1_name']+'|'+data_['actor_2_name']+'|'+data_['actor_3_name']
-    data_ = addColumnForEachWord(data_,'actors', 5)
+    data_ = addColumnForEachWord(data_,'actors', 0)
     data_ = data_.drop(['actor_1_name','actor_3_name','actor_2_name'], axis=1)   
-     
+      
     #Nouveau score qui sublime les haut score avec beaucoup de votes et pénalise les score faibles avec beaucoup de vote
-    score_ = data['imdb_score'].divide(10)
-    num_voter_ = (data['num_voted_users']-data['num_voted_users'].mean()).divide(data['num_voted_users'].max())
+    score_ = (data['imdb_score']-data['imdb_score'].mean()).divide(10)
+    num_voter_ = data['num_voted_users'].divide(data['num_voted_users'].max())
     data_['new_score'] = score_.multiply(num_voter_)
     data_ = data_.drop(['imdb_score'], axis = 1)
-              
+    
     return data_, info
 
 #%%
@@ -114,14 +111,24 @@ def getRecommendation_(index_bis , info, distanceMatrix):
     del nsmallest_list[0]                                         
     res = info.iloc[nsmallest_list]
     return res
-def recommend(info, film_id, d_matrix):
+def recommend(data, info, film_id, d_matrix):
     #Renvoie les films recommandés par la fonction 'getRecommend'
     index = info.index[info['film_id'] == film_id].tolist()
     if len(index) == 0:
         return None, None
     else:
         index_ = index[0]
-    return info.iloc[[index_]] , getRecommendation_(index_,info,d_matrix)
+    movie = info.iloc[[index_]]
+    recommendations = getRecommendation_(index_,info,d_matrix)
+    if movie is None or recommendations is None:
+        print('Sorry, we are not able to recommend you a movie based on the selected movie')
+    else:
+        selected_columns_display = ['movie_title', 'genres','director_name','title_year']
+        print_("Selected Movie:")
+        print(movie[selected_columns_display].to_string(index=False,header=False))
+        print_("Recommendations:")
+        print(recommendations[selected_columns_display].to_string(index=False,header=False))
+    return movie, recommendations
 def print_(string):
     # Format de print
     separator = "---------------------------"
@@ -132,24 +139,38 @@ def normalize(data):
     np_scaled = min_max_scaler.fit_transform(data)
     data_normalized = pd.DataFrame(np_scaled)
     return data_normalized
+def pca_trans(data_norm, n_components):
+    pca = decomposition.PCA(n_components)
+    pca.fit(data_norm)
+    data_trans = pca.transform(data_norm)
+    pca.explained_variance_ratio_.sum()
+    return data_trans
+def print_var(data, info = None):
+    #Affiche les variables dans le dataframe df, le data type, ainsi que les 5 premiers éléments si 'afficher'='oui'
+    
+    print('Variables')
+    print()
+    for var in list(data):
+        print('-------------------------------------------------')
+        #print(var,' (',df[var].dtype,')','     ',df[var][0],',',df[var][1],',',df[var][2],',',df[var][3],',',df[var][4]) # A améliorer
+        print(var,' (',data[var].dtype,')','      ')
+        if info == 'oui':
+            print(data[var][0:4])
+    print('-------------------------------------------------')
+    print()
+    print('Le nombre de variables est de :',len(list(data)))
+    return
 #%%
 def init():
-    data = pd.read_csv('data.csv', sep=",")
-    global info_1
-    global d_matrix
-    data_1, info_1 = cleanAndSelect_v1(data)
-    data_1_norm = normalize(data_1) 
-    d_matrix = distance_matrix(data_1_norm)
+    data = pd.read_csv('movie_metadata.csv', sep=",")
+    global info_f
+    global dmatrix_f
+    global data_f
+    data_f, info_f = cleanAndSelect_vf(data)
+    data_f_norm = normalize(data_f)                                                                                            
+    dmatrix_f = distance_matrix(data_f_norm)
     return
 
 def getRecommendation(film_id):
-    movie, recommendations = recommend(info_1, film_id,d_matrix)
-    if movie is None or recommendations is None:
-        print('Sorry, we are not able to recommend you a movie based on the selected movie')
-    else:
-        selected_columns_display = ['movie_title', 'genres','director_name','title_year']
-        print_("Selected Movie:")
-        print(movie[selected_columns_display].to_string(index=False,header=False))
-        print_("Recommendations:")
-        print(recommendations[selected_columns_display].to_string(index=False,header=False))
+    movie, recommendations = recommend(data_f, info_f, film_id, dmatrix_f)
     return
