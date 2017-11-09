@@ -6,9 +6,9 @@ Created on Thu Nov  2 09:20:04 2017
 """
 #%%
 import pandas as pd
-from sklearn import preprocessing
 from pandas import get_dummies
 from sklearn.cluster import KMeans
+from sklearn import preprocessing
 from sklearn import decomposition
 #%%
 def cleanAndSelect_v2(data):
@@ -32,10 +32,11 @@ def cleanAndSelect_v2(data):
      
        
     #Nouveau score qui sublime les haut score avec beaucoup de votes et pénalise les score faibles avec beaucoup de vote
-    score_ = data['imdb_score'].divide(10)
-    num_voter_ = (data['num_voted_users']-data['num_voted_users'].mean()).divide(data['num_voted_users'].max())
+    score_ = (data['imdb_score']-data['imdb_score'].mean()).divide(10)
+    num_voter_ = data['num_voted_users'].divide(data['num_voted_users'].max())
     data_['new_score'] = score_.multiply(num_voter_)
-    data_ = data_.drop(['imdb_score'], axis = 1)    
+    data_ = data_.drop(['imdb_score'], axis = 1)
+         
     return data_, info
 #%%
 def feat_to_drop(data, threshold):
@@ -92,7 +93,7 @@ def recommend_clustering(data, info,film_id):
         movie = info.iloc[[index_]]
         cluster = movie['cluster'].iloc[0]
         size_cluster = data[data['cluster']==cluster].shape[0]
-        if size_cluster < 6:
+        if size_cluster < 5:
             lis_index = data[data['cluster']==cluster].sort_values('new_score').head(size_cluster).index.tolist()
         else:
             if index_ in data[data['cluster']==cluster].sort_values('new_score').head(5).index.tolist():
@@ -102,7 +103,16 @@ def recommend_clustering(data, info,film_id):
                 lis_index = data[data['cluster']==cluster].sort_values('new_score').head(5).index.tolist()
                 
         recommendations = info.iloc[lis_index]
-    return movie, recommendations
+        
+        if movie is None or recommendations is None:
+            print('Sorry, we are not able to recommend you a movie based on the selected movie')
+        else:
+            selected_columns_display = ['movie_title', 'genres','director_name','title_year']
+            print_("Selected Movie:")
+            print(movie[selected_columns_display].to_string(index=False,header=False))
+            print_("Recommendations:")
+            print(recommendations[selected_columns_display].to_string(index=False,header=False))
+            return movie, recommendations
 def print_(string):
     # Format de print
     separator = "---------------------------"
@@ -113,17 +123,35 @@ def normalize(data):
     np_scaled = min_max_scaler.fit_transform(data)
     data_normalized = pd.DataFrame(np_scaled)
     return data_normalized
+def pca_trans(data_norm, n_components):
+    pca = decomposition.PCA(n_components)
+    pca.fit(data_norm)
+    data_trans = pca.transform(data_norm)
+    pca.explained_variance_ratio_.sum()
+    return data_trans
+def print_var(data, info = None):
+    #Affiche les variables dans le dataframe df, le data type, ainsi que les 5 premiers éléments si 'afficher'='oui'
+    
+    print('Variables')
+    print()
+    for var in list(data):
+        print('-------------------------------------------------')
+        #print(var,' (',df[var].dtype,')','     ',df[var][0],',',df[var][1],',',df[var][2],',',df[var][3],',',df[var][4]) # A améliorer
+        print(var,' (',data[var].dtype,')','      ')
+        if info == 'oui':
+            print(data[var][0:4])
+    print('-------------------------------------------------')
+    print()
+    print('Le nombre de variables est de :',len(list(data)))
+    return
 #%%
 def init():
-    data = pd.read_csv('data.csv', sep=",")
+    data = pd.read_csv('movie_metadata.csv', sep=",")
     global info_2
     global data_2
     data_2, info_2 = cleanAndSelect_v2(data)
     data_2_norm = normalize(data_2) 
-    pca = decomposition.PCA(n_components = 12)
-    pca.fit(data_2_norm)
-    data_2_trans = pca.transform(data_2_norm)
-    pca.explained_variance_ratio_.sum()
+    data_2_trans = pca_trans(data_2_norm, 12)
     kmeans = KMeans(n_clusters=200).fit(data_2_trans)
     labels = pd.Series(kmeans.labels_,index = data_2.index.tolist())
     info_2 = pd.concat([info_2, labels.to_frame('cluster')], axis = 1)
@@ -131,12 +159,4 @@ def init():
     return
 def getRecommendation(film_id):
     movie, recommendations = recommend_clustering(data_2, info_2, film_id)
-    if movie is None or recommendations is None:
-        print('Sorry, we are not able to recommend you a movie based on the selected movie')
-    else:
-        selected_columns_display = ['movie_title', 'genres','director_name','title_year']
-        print_("Selected Movie:")
-        print(movie[selected_columns_display].to_string(index=False,header=False))
-        print_("Recommendations:")
-        print(recommendations[selected_columns_display].to_string(index=False,header=False))
     return
