@@ -11,7 +11,7 @@ import seaborn as sns
 #%%
 def concat():
     months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-    lis_var= ['MONTH', 'DAY_OF_MONTH', 'DAY_OF_WEEK', 'UNIQUE_CARRIER', 'ORIGIN_AIRPORT_ID', 'DEST_AIRPORT_ID', 'CRS_DEP_TIME', 'CRS_ARR_TIME', 'ARR_DELAY', 'DISTANCE', 'CRS_ELAPSED_TIME']
+    lis_var= ['MONTH', 'DAY_OF_MONTH', 'DAY_OF_WEEK', 'UNIQUE_CARRIER','FL_NUM','ORIGIN_AIRPORT_ID', 'DEST_AIRPORT_ID', 'CRS_DEP_TIME', 'CRS_ARR_TIME', 'ARR_DELAY', 'DISTANCE', 'CRS_ELAPSED_TIME']
     var_ref =['ORIGIN_AIRPORT_ID','ORIGIN','ORIGIN_CITY_NAME']
     data_=[]
     data_ref=[]
@@ -25,7 +25,13 @@ def concat():
         print('fin '+i)
     data_ = pd.concat(data_)
     data_ref = pd.concat(data_ref)
-    data_ref = data_ref.drop_duplicates()
+    data_ref = data_ref.drop_duplicates('ORIGIN')
+    
+    data_ref = data_ref[data_ref['ORIGIN_CITY_NAME'].str.isnumeric()==False]
+    data_ref = pd.concat([data_ref, data_ref['ORIGIN_CITY_NAME'].apply(lambda x: pd.Series([i for i in x.split(',')]))], axis = 1)
+    data_ref.rename(columns={0:'CITY', 1:'STATE', 'ORIGIN_AIRPORT_ID':'AIRPORT_ID', 'ORIGIN':'CODE'},inplace=True)
+    data_ref = data_ref.drop('ORIGIN_CITY_NAME', axis = 1)
+    
     print('Il y a ',data_['ARR_DELAY'].isnull().sum(),' lignes où \'ARR_DELAY\' a des valeurs vides pour ',data_.shape[0],' lignes')
     data_ = data_[np.isfinite(data_['ARR_DELAY'])]
     print(data_.describe())
@@ -65,7 +71,20 @@ def heat_map(data, method, min_periods, save=False):
         plt.title('Matrice de corrélation des variables')
         plt.show()
     return
-
+def select_flight(data_, data_ref, origin, destination, carrier = None):
+    #donne les données en fonction de l'origine (CODE), de la destination (CODE) et de la compagnie 'carrier' (AA)
+    ori = int(data_ref[data_ref['CODE'] == 'BOS']['AIRPORT_ID'])
+    dest = int(data_ref[data_ref['CODE'] == 'ATL']['AIRPORT_ID'])
+    if carrier:
+        data_origin_dest = data_[(data_['ORIGIN_AIRPORT_ID'] == ori) & (data_['DEST_AIRPORT_ID'] == dest) & (data_['UNIQUE_CARRIER'] == carrier)]
+    else:
+        data_origin_dest = data_[(data_['ORIGIN_AIRPORT_ID'] == ori) & (data_['DEST_AIRPORT_ID'] == dest)]
+    if data_origin_dest.empty:
+        print('WARNING: Check the input')
+    return data_origin_dest
+def get_all_flights(data_, data_ref):
+    all_flights = data_[['ORIGIN_AIRPORT_ID','DEST_AIRPORT_ID']].drop_duplicates()
+    return all_flights
 #%% ------------------------------- Etude exploratrice sur la base du mois de janvier ------------------------------------
 data_1 = pd.read_csv('2016_01.csv', sep=",",error_bad_lines=False)
 #%%
@@ -82,4 +101,10 @@ lis_var= ['MONTH', 'DAY_OF_MONTH', 'DAY_OF_WEEK', 'UNIQUE_CARRIER', 'ORIGIN_AIRP
 
 data_test=data_1_[data_1_.columns.intersection(lis_var)]
 #%% ---------------------------------- Utilisons la vraie base ----------------------
-data_, data_ref=  concat()
+data_, data_ref = concat()
+#%%
+data_boston_atl_AA = select_flight(data_, data_ref, 'BOS', 'ATL', 'AA')
+
+#%%%
+
+nb_flights = data_[['ORIGIN_AIRPORT_ID','DEST_AIRPORT_ID','CRS_DEP_TIME','CRS_ARR_TIME','UNIQUE_CARRIER']].drop_duplicates()
