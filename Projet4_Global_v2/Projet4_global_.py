@@ -23,18 +23,18 @@ def charge():
     data_carrier = pd.read_csv('data_carrier.csv', sep=",",error_bad_lines=False)
     encoder = joblib.load('encoding.pkl')
     scaler = joblib.load('scaling.pkl')
-    
+
     coefs = coefs_['INTERCEPT_COEFS'][1:]
     intercept = coefs_['INTERCEPT_COEFS'][0]
     dic_airport = ast.literal_eval(dic_airport['ORIGIN_NUM'][0])
 
-    
+
     #préparation des variables
     #scalingDF = data_[['DISTANCE', 'CRS_ELAPSED_TIME', 'HDAYS']].astype('float') # Numerical features
 #==============================================================================
-#     categDF = data_[['MONTH', 'DAY_OF_WEEK', 'ORIGIN_NUM', 
-#                     'DEST_NUM', 'ARR_HOUR', 'DEP_HOUR', 
-#                     'CARRIER_CODE', 'WEEK']] 
+#     categDF = data_[['MONTH', 'DAY_OF_WEEK', 'ORIGIN_NUM',
+#                     'DEST_NUM', 'ARR_HOUR', 'DEP_HOUR',
+#                     'CARRIER_CODE', 'WEEK']]
 #==============================================================================
     return data_ref, coefs, intercept, list_flight, dic_airport, data_carrier, encoder, scaler
 def predict(origin, destination, carrier_code, date, hour_departure, data_ref, list_flight, dic_airport, coefs, intercept, encoder, scaler):
@@ -43,7 +43,7 @@ def predict(origin, destination, carrier_code, date, hour_departure, data_ref, l
     month = int(date.split('/')[1])
     date = datetime.datetime(2017, month, day)
     day_of_week = date.weekday()+1
-                             
+
     holidays_2017 = ['2017-01-02', '2017-01-16','2017-02-20','2017-05-29',
                      '2017-07-04','2017-09-04','2017-10-09','2017-11-10','2017-11-23',
                      '2017-12-25', '2018-01-01']
@@ -65,7 +65,7 @@ def predict(origin, destination, carrier_code, date, hour_departure, data_ref, l
         print('     Carrier is 2 letter/number capital format')
         print('     Carrier is 2 letter/number capital format')
         print('     Date is in the format DD/MM')
-    
+
     #encoder = OneHotEncoder() # Create encoder objec
     #encoder.fit(categDF)
     categDF_encoded = encoder.transform(categ)
@@ -74,13 +74,23 @@ def predict(origin, destination, carrier_code, date, hour_departure, data_ref, l
     scalingDF_sparse = sparse.csr_matrix(scaler.transform(scale)) # Transform the data and convert to sparse
     x_to_predict = sparse.hstack((scalingDF_sparse, categDF_encoded))
     y_predicted = x_to_predict.toarray().dot(coefs) + intercept
-    y_predicted = round(y_predicted[0]) 
+    y_predicted = round(y_predicted[0])
     if y_predicted < 0:
         print('The flight from ',data_ref[data_ref['CODE']==origin]['CITY'],' (',origin,') to ',data_ref[data_ref['CODE']==destination]['CITY'], ' (',destination,') on ',date.strftime('%Y-%m-%d'),' at ',hour_departure,'o\'clock will have an advance of ',-1*y_predicted,' min')
     else:
         print('The flight from ',data_ref[data_ref['CODE']==origin]['CITY'],' (',origin,') to ',data_ref[data_ref['CODE']==destination]['CITY'], ' (',destination,') on ',date.strftime('%Y-%m-%d'),' at ',hour_departure,'o\'clock will have a delay of ',y_predicted,' min')
-    return
+    originCity = data_ref[data_ref['CODE']==origin]['CITY']
+    originCode = origin
+    destCity = data_ref[data_ref['CODE']==destination]['CITY']
+    destCode = destination
+    date = date.strftime('%Y-%m-%d')
+    depHour = hour_departure
+    prediction = y_predicted
+    return display(originCity,originCode,destCity,destCode,date,depHour,prediction)
 #%%
+def display(originCity,originCode,destCity,destCode,date,depHour,prediction):
+    return 'The flight from {} ({}) to {} ({}) on {} at {} will have a delay of {} min'.format(originCity,originCode,destCity,destCode,date,depHour,prediction)
+
 def init():
     global data_ref, coefs, intercept, list_flight, dic_airport, data_carrier, encoder, scaler
     data_ref, coefs, intercept, list_flight, dic_airport, data_carrier, encoder, scaler = charge()
@@ -90,5 +100,8 @@ def Predict(origin, destination, carrier_code, date, hour_departure, data_ref, l
     return
 #%%
 data_ref, coefs, intercept, list_flight, dic_airport, data_carrier, encoder, scaler = charge()
-#%%            
-predict('ATL', 'BOS', 'DL', '12/12', 16, data_ref, list_flight, dic_airport, coefs, intercept, encoder, scaler)
+#%%
+def test():
+    return predict('ATL', 'BOS', 'DL', '12/12', 16, data_ref, list_flight, dic_airport, coefs, intercept, encoder, scaler)
+
+print(test())
