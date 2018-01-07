@@ -103,5 +103,3 @@ data_ref, coefs, intercept, list_flight, dic_airport, data_carrier, encoder, sca
 #%%
 def test():
     return predict('ATL', 'BOS', 'DL', '12/12', 16, data_ref, list_flight, dic_airport, coefs, intercept, encoder, scaler)
-
-print(test())
