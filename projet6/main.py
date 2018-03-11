@@ -5,6 +5,7 @@ from sklearn.naive_bayes import MultinomialNB
 import numpy as np
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn import metrics
 from sklearn.linear_model import SGDClassifier
 categories = ['alt.atheism', 'soc.religion.christian',
               'comp.graphics', 'sci.med']
@@ -74,7 +75,7 @@ text_clf.fit(twenty_train.data, twenty_train.target)
 predicted = text_clf.predict(docs_test)
 np.mean(predicted == twenty_test.target)
 
-from sklearn import metrics
+
 print(metrics.classification_report(twenty_test.target, predicted,
     target_names=twenty_test.target_names))
 print(metrics.confusion_matrix(twenty_test.target, predicted))
