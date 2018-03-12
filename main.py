@@ -7,7 +7,6 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn import metrics
 from sklearn.linear_model import SGDClassifier
-import pandas as pd
 
 def data():
     categories = ['alt.atheism', 'soc.religion.christian',
@@ -19,15 +18,7 @@ def data():
     return train, test
 
 # SELECT * FROM posts WHERE Id < 50000 AND Tags IS NOT NULL;
-data = pd.read_csv('data.csv', low_memory=False, error_bad_lines=False)
 
-test = data.ix[0]['Body']
-count_vect = CountVectorizer()
-test_count = count_vect.fit_transform([test])
-
-print(count_vect.vocabulary_)
-#https://towardsdatascience.com/multi-class-text-classification-with-scikit-learn-12f1e60e0a9f
-"""
 train, test = data()
 count_vect = CountVectorizer()
 train_counts = count_vect.fit_transform(train.data)
@@ -44,7 +35,7 @@ testBis_predicted = clf.predict(testBis_tfidf)
 
 for doc, category in zip(testBis, testBis_predicted):
     print('%r => %s' % (doc, train.target_names[category]))
-"""
+
 """
 text_clf = Pipeline([('vect', CountVectorizer()),
                      ('tfidf', TfidfTransformer()),

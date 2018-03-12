@@ -20,23 +20,22 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import SGDRegressor
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-import datetime
 from datetime import datetime, date, timedelta
 from dateutil.parser import parse
 from sklearn.externals import joblib
 #%%% -------- concaténation des variables ------------
 #On va concaténer les matrices
 months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-lis_var= ['MONTH', 'DAY_OF_MONTH', 'DAY_OF_WEEK', 'UNIQUE_CARRIER','FL_NUM','ORIGIN', 'DEST', 'CRS_DEP_TIME', 
+lis_var= ['MONTH', 'DAY_OF_MONTH', 'DAY_OF_WEEK', 'UNIQUE_CARRIER','FL_NUM','ORIGIN', 'DEST', 'CRS_DEP_TIME',
           'CRS_ARR_TIME', 'ARR_DELAY','DEP_DELAY', 'DISTANCE', 'CRS_ELAPSED_TIME', 'ACTUAL_ELAPSED_TIME',
           'DIVERTED', 'CANCELLED','CARRIER_DELAY','WEATHER_DELAY','NAS_DELAY','SECURITY_DELAY',
-          'LATE_AIRCRAFT_DELAY','FL_DATE']
+          'LATE_AIRCRAFT_DELAY','FL_DATE','FLIGHT']
 var_ref =['ORIGIN_AIRPORT_ID','ORIGIN','ORIGIN_CITY_NAME']
 data_=[]
 data_ref=[]
 for i in months:
     print('début '+i)
-    data_int = pd.read_csv('2016_'+i+'.csv', sep=",",error_bad_lines=False)
+    data_int = pd.read_csv('data/2016_'+i+'.csv', sep=",",error_bad_lines=False)
     data_int_ = data_int[data_int.columns.intersection(lis_var)]
     ref_int = data_int[data_int.columns.intersection(var_ref)].drop_duplicates()
     data_.append(data_int_)
@@ -62,8 +61,7 @@ data_v2['ARR_HOUR'] = data_v2['CRS_ARR_TIME'].divide(100).astype('int')
 data_v2['DEP_HOUR'] = data_v2['DEP_HOUR'].replace(24,0)
 data_v2['ARR_HOUR'] = data_v2['ARR_HOUR'].replace(24,0)
 data_v2['FL_DATE'] = data_v2['FL_DATE'].astype('str')
-data_v2['WEEK'] = data_v2['FL_DATE'].apply(lambda x: datetime.date(2016, int(x.split('-')[1]), 
-                                           int(x.split('-')[2])).isocalendar()[1])
+data_v2['WEEK'] = data_v2['FL_DATE'].apply(lambda x: date(2016, int(x.split('-')[1]),int(x.split('-')[2])).isocalendar()[1])
 #%% ---------------------------- Modèle 2 - sans distance et elapsed time -----------------------------------------
 data_M2 = data_v2
 
@@ -98,8 +96,8 @@ data_M2['HDAYS'] = data_M2['FL_DATE'].apply(lambda x: dict_holidays['HDAYS'][x])
 #%%----------------Modèle 6-----------------------
 data_M6 = data_M2
 scalingDF_M6 = data_M6[['DISTANCE', 'CRS_ELAPSED_TIME','HDAYS']].astype('float') # Numerical features
-categDF_M6 = data_M6[['MONTH', 'DAY_OF_WEEK', 'ORIGIN_NUM', 
-                    'DEST_NUM', 'ARR_HOUR', 'DEP_HOUR', 
+categDF_M6 = data_M6[['MONTH', 'DAY_OF_WEEK', 'ORIGIN_NUM',
+                    'DEST_NUM', 'ARR_HOUR', 'DEP_HOUR',
                     'CARRIER_CODE','WEEK']]
 #%%% ------------ Prédiction linéaire all -------
 encoder = OneHotEncoder() # Create encoder objec
@@ -118,7 +116,7 @@ x_test_numerical = sparse.csr_matrix(scaler.transform(x_test_numerical))
 x_train[:, 0:size_scale] = x_train_numerical
 x_test[:, 0:size_scale] = x_test_numerical
 SGD_params = [{'alpha': 10.0**-np.arange(5,7),'l1_ratio' : [0,.5,1]}] # Suggested range we try
-SGD_model_M6 = GridSearchCV(SGDRegressor(penalty = 'elasticnet', random_state = 0), SGD_params, scoring = 'neg_mean_absolute_error', cv = 5) # Use 5-fold CV 
+SGD_model_M6 = GridSearchCV(SGDRegressor(penalty = 'elasticnet', random_state = 0), SGD_params, scoring = 'neg_mean_absolute_error', cv = 5) # Use 5-fold CV
 SGD_model_M6.fit(x_train, y_train) # Fit the model
 best_params = SGD_model_M6.best_params_ #alpha = 10^-6 / penalty = l1_ratio = 1
 y_true, y_pred = y_test, SGD_model_M6.predict(x_test) # Predict on our test set
@@ -138,8 +136,7 @@ list_coefs.to_csv(path_or_buf = 'coefs_global_.csv', sep=',')
 joblib.dump(encoder, 'encoding.pkl')
 joblib.dump(scaler, 'scaling.pkl')
 #%%
+
 list_flight = data_M6[['FLIGHT','DISTANCE', 'CRS_ELAPSED_TIME']].drop_duplicates('FLIGHT')
 #%%
 list_flight.to_csv(path_or_buf = 'list_flight.csv', sep=',')
-
-
