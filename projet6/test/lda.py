@@ -23,6 +23,8 @@ numberOfTopWords = 3
 dataset = fetch_20newsgroups(shuffle=True, random_state=1,
                              remove=('headers', 'footers', 'quotes'))
 train_data = dataset.data[:dataSize]
+print(train_data)
+
 
 count_vect = CountVectorizer(max_df=0.95, min_df=2,max_features=vocabularySize,stop_words='english')
 train_count = count_vect.fit_transform(train_data)

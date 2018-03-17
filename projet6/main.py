@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn import metrics
 from sklearn.linear_model import SGDClassifier
 import pandas as pd
-
+from sklearn.decomposition import NMF, LatentDirichletAllocation
 def data():
     categories = ['alt.atheism', 'soc.religion.christian',
                   'comp.graphics', 'sci.med']
@@ -17,13 +17,30 @@ def data():
     test = fetch_20newsgroups(subset='test',
         categories=categories, shuffle=True, random_state=42)
     return train, test
-
+def display(model, feature_names, n_top_words):
+    for i, topic in enumerate(model.components_):
+        message = "Topic %d: " % i
+        message += " ".join([feature_names[i] for i in topic.argsort()[:-n_top_words - 1:-1]])
+        print(message)
 # SELECT * FROM posts WHERE Id < 50000 AND Tags IS NOT NULL;
 data = pd.read_csv('data.csv', low_memory=False, error_bad_lines=False)
+dataSize = 2000
+vocabularySize = 1000
+numberOfTopics = 5
+numberOfTopWords = 3
 
-test = data.ix[0]['Body']
-count_vect = CountVectorizer()
-test_count = count_vect.fit_transform([test])
+train_data = data['Title'].tolist()
+count_vect = CountVectorizer(max_df=0.95, min_df=2,max_features=vocabularySize,stop_words='english')
+train_count = count_vect.fit_transform(train_data)
+
+lda = LatentDirichletAllocation(n_components=numberOfTopics, max_iter=5,learning_method='online',learning_offset=50.,random_state=0)
+lda.fit(train_count)
+
+names = count_vect.get_feature_names()
+
+
+display(lda, names, numberOfTopWords)
+
 
 print(count_vect.vocabulary_)
 #https://towardsdatascience.com/multi-class-text-classification-with-scikit-learn-12f1e60e0a9f

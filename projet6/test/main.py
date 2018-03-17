@@ -17,6 +17,11 @@ def data():
         categories=categories, shuffle=True, random_state=42)
     return train, test
 
+def display(model, feature_names, n_top_words):
+    for i, topic in enumerate(model.components_):
+        message = "Topic %d: " % i
+        message += " ".join([feature_names[i] for i in topic.argsort()[:-n_top_words - 1:-1]])
+        print(message)
 # SELECT * FROM posts WHERE Id < 50000 AND Tags IS NOT NULL;
 # http://scikit-learn.org/stable/tutorial/text_analytics/working_with_text_data.html
 train, test = data()
